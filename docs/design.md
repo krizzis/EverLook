@@ -79,6 +79,12 @@ Constraints:
 - ❌ Must not bundle or require build step (ST serves raw files)
 - ❌ Must not introduce heavy third-party dependencies
 
+Development environment:
+- SillyTavern installation: `E:\AI_Tools\SillyTavern`
+- SillyTavern local URL: `http://127.0.0.1:8088/`
+- Extension target: `E:\AI_Tools\SillyTavern\public\scripts\extensions\third-party\EverLook`
+- AI Assistant: **read-only access approved** to ST source for API reference and import path verification
+
 ---
 
 ## 2. Design Principles

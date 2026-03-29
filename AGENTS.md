@@ -108,6 +108,8 @@ Use this exact structure (from docs/methodology.md §12):
 - Decision on fail-open/closed documented in docs/design.md
 ```
 
+Always wait for operator input afrer finishing Opening Brief.
+
 ---
 
 # 3) Planning & Implementation Approach
@@ -545,6 +547,8 @@ Once green, this satisfies acceptance criteria (all tests pass, docs/methodology
 **Updated docs/handoff.md:**
 [Full docs/handoff.md content follows, using canonical schema...]
 ```
+
+After closing report is finished propose to human operator ways to test changes manually, or cleary state that manual testing is not possible
 
 ---
 

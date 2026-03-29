@@ -1,40 +1,54 @@
-# handoff.md (canonical schema v1.1)
+# docs/handoff.md
 
 ## Context Snapshot
-- EverLook is a SillyTavern third-party extension for per-chat scene state tracking with a single active character.
-- T-000 through T-004 are complete: documentation bootstrap, extension scaffold, scene state model, multi-chat persistence, and Tech-LLM turn-pair analysis.
-- The repository now contains scaffolded placeholder modules for T-005 through T-007, but only T-005 is the next active implementation task.
-- Unit coverage evidence captured so far is strong: 134/134 tests passing with overall coverage above the project threshold.
-- Group chat and multi-character tracking remain out of scope for MVP.
+- EverLook is a SillyTavern extension for single-character scene tracking during chat sessions.
+- 6 tasks are now complete: T-000 through T-005.
+- Scene state, per-chat persistence, Tech-LLM turn-pair analysis, and deterministic prompt generation are implemented and covered by Jest.
+- Prompt generation now follows the required order and handles interaction tags, empty outfit fallback, and optional-field omission deterministically.
+- Character initialization now reads `[APPEARANCE]`, `[LORA]`, and `[OUTFIT]` markers from the character description, with optional silent LLM fallback for appearance only.
+- Group chats remain explicitly out of scope for MVP.
 
 ## Active Task(s)
-- T-005: Prompt Builder (Danbooru Tag Generation) - Acceptance: `PromptBuilder.js` converts scene state to a deterministic Danbooru-style tag string; tag order is subject -> appearance -> pose -> outfit -> emotion -> action -> background -> lora; `action.interaction` controls subject/action tags correctly; empty or null outfit renders as `completely nude`; null and empty attributes are omitted; output contains no trailing or double commas; unit tests cover ordering, null handling, interaction handling, determinism, and changed-lines coverage >= 80%.
+- T-006: Background Switcher - Acceptance: cascading search (`name+daytime+weather -> name+daytime -> name`), case-insensitive substring matching, first-match selection, ST background API set on match, warning on no match, unit tests, coverage >=80%.
 
 ## Decisions Made
-- LLM analysis remains decoupled from SillyTavern internals through provider-function dependency injection in T-004 (link: `docs/design.md` Section 3.6).
-- Confidence threshold gating remains the rule for analyzer-driven state changes so low-confidence values do not mutate scene state (link: `docs/design.md` Section 3.6).
-- Placeholder modules for future tasks stay in the scaffold, but tracker and todo now treat them as not started until behavior exists and validation evidence is recorded (link: `docs/tracker.md`).
+- T-004 kept the analyzer decoupled from the concrete ST generation provider via injected `providerFn`.
+- T-005 implements prompt generation as a pure static formatter so it can be reused by future image-hook and context-injection tasks without side effects.
+- T-005 preserves the character lora trigger string casing while normalizing other textual tags to lowercase to avoid mangling external trigger syntax.
+- Character card convention: `[APPEARANCE]`, `[LORA]`, and `[OUTFIT]` live in the description field; missing `[LORA]` is skipped, while missing `[APPEARANCE]` can use a silent extractor when a provider is available.
 
 ## Changes Since Last Session
-- `docs/handoff.md` (+15/-15): Re-aligned the canonical handoff to the real next task and current repository state.
-- `docs/todo.md` (+115/-168): Replaced the stale first-session bootstrap plan with the next implementation slice centered on T-005.
-- `docs/tracker.md` (+8/-8): Moved completed T-004 out of the backlog context and refreshed tracker metadata/changelog for consistency.
+- `src/prompt/PromptBuilder.js` (+108/-0): Implemented deterministic Danbooru-style prompt generation helpers.
+- `tests/PromptBuilder.test.js` (+93/-0): Added coverage for ordering, interaction behavior, empty outfit fallback, optional omission, determinism, and comma hygiene.
+- `jest.config.js` (+1/-0): Added `src/prompt/**/*.js` to coverage collection.
+- `docs/tracker.md` (+9/-9): Marked T-005 complete and advanced backlog counts.
+- `src/state/cardMetadata.js` (NEW): Added marker-based parsing for `[APPEARANCE]` and `[LORA]` blocks in character descriptions.
+- `src/analyzer/AppearanceExtractor.js` (NEW): Added silent Danbooru-style appearance extraction helper for missing `[APPEARANCE]` cases.
+- `src/state/StateManager.js` (MODIFIED): Switched initialization to async marker-first extraction with optional appearance fallback.
+- `tests/cardMetadata.test.js` and `tests/AppearanceExtractor.test.js` (NEW): Added coverage for marker parsing and fallback extraction.
 
 ## Validation & Evidence
-- Documentation audit completed against `docs/methodology.md` Section 4, `docs/tracker.md`, `docs/design.md`, and the current repository layout.
-- Repository sanity check confirms implemented modules exist for T-000 through T-004 and placeholder files exist for T-005 through T-007.
-- No code or test behavior changed in this session; prior evidence remains: unit tests 134/134 passing and coverage above 80% on completed work.
+- Unit: 146 total tests, 140 passing and 6 existing TODO tests across 8 suites via `node --experimental-vm-modules ./node_modules/jest/bin/jest.js --coverage --runInBand`
+- Coverage: 93.38% statements, 86.00% branches, 98.11% functions, 94.84% lines
+- Prompt module coverage: `PromptBuilder.js` 100% statements, 88.09% branches, 100% functions, 100% lines
+- Branch: `feature/t-005-prompt-builder`
 
 ## Risks & Unknowns
-- SillyTavern provider binding for live text generation still needs confirmation when wiring analyzer and prompt-related runtime integration in `index.js` - owner: AI Assistant - review: 2026-03-31
-- Minimum supported SillyTavern version is still not explicitly pinned in the manifest or docs - owner: Project Owner - review: 2026-03-31
+- ST Global Provider Binding: need to trace the exact SillyTavern global/provider entry point when wiring analyzer execution in `index.js` for later integration tasks. - owner: AI Assistant - review: 2026-03-31
+- Background API surface still needs verification against the local SillyTavern codebase before T-006 implementation to avoid guessing unsupported calls. - owner: AI Assistant - review: 2026-03-31
+- Appearance fallback is implemented via injected provider contract, but the concrete ST Tech-LLM binding for init-time calls still needs to be wired in runtime code. - owner: AI Assistant - review: 2026-03-31
+- Starting pose/emotion/location are still default-seeded; add a silent Tech-LLM init pass that reads scenario plus the character's first message so those fields start with meaningful values before normal turn analysis. - owner: AI Assistant - review: 2026-03-31
 
 ## Next Steps
-1. Implement T-005 in `src/prompt/PromptBuilder.js` with unit tests and deterministic ordering validation.
-2. Validate T-005 with `npm test -- PromptBuilder` or the project-equivalent Jest command and record coverage evidence in `docs/tracker.md`.
-3. Start T-006 only after T-005 is complete so background switching can consume the stabilized scene-state prompt conventions.
+1. Implement T-006 Background Switcher against the documented/local ST background API.
+2. Add the pending silent Tech-LLM init extraction for starting pose, emotion, and location from scenario plus the character's first message.
+3. Wire T-005 into the future image-generation hook (T-008) once the pipeline interception point is confirmed.
 
 ## Status Summary
-- ✅ 100% - T-000 through T-004 complete
-- ⚪ 0% - T-005 is the next implementation task
-- ⚪ 0% - T-006 through T-011 not started
+- ✅ 100% - T-000 (Documentation)
+- ✅ 100% - T-001 (Project Scaffolding)
+- ✅ 100% - T-002 (Scene State)
+- ✅ 100% - T-003 (State Manager)
+- ✅ 100% - T-004 (Turn-Pair Analyzer)
+- ✅ 100% - T-005 (Prompt Builder)
+- ⚪ 0% - T-006 through T-011 (not started)

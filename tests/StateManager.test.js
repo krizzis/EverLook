@@ -13,8 +13,7 @@ const mockContext = {
     characters: {
         10: {
             name: 'Alice',
-            description: 'A brave adventurer.',
-            creator_notes: 'lora:brave:1'
+            description: '[APPEARANCE]\nlong blonde hair, blue eyes\n\n[LORA]\n<lora:alice:1>\n\n[OUTFIT]\nschool uniform, skirt'
         }
     },
     saveSettingsDebounced: jest.fn()
@@ -35,22 +34,23 @@ describe('StateManager', () => {
         stateManager.setup(global.extension_settings, () => mockContext);
         
         // Reset state
-        stateManager.initChat(null, null); // Forces reset
+        return stateManager.initChat(null, null); // Forces reset
     });
 
     it('returns null state before initialization', () => {
         expect(stateManager.getState()).toBeNull();
     });
 
-    it('creates a fresh state from ST context if no saved data exists', () => {
-        stateManager.initChat('test-chat-1', 10);
+    it('creates a fresh state from ST context if explicit markers exist', async () => {
+        await stateManager.initChat('test-chat-1', 10);
         const state = stateManager.getState();
 
         expect(state).not.toBeNull();
         expect(state.chatId).toBe('test-chat-1');
         expect(state.characterName).toBe('Alice');
-        expect(state.appearance.description).toBe('A brave adventurer.');
-        expect(state.characterLora).toBe('lora:brave:1');
+        expect(state.appearance.description).toBe('long blonde hair, blue eyes');
+        expect(state.characterLora).toBe('<lora:alice:1>');
+        expect(state.outfit).toEqual(['school uniform', 'skirt']);
 
         // It should have saved to settings immediately
         const savedData = global.extension_settings.EverLook.chatStates['test-chat-1'];
@@ -60,11 +60,22 @@ describe('StateManager', () => {
         expect(mockContext.saveSettingsDebounced).toHaveBeenCalledTimes(1);
     });
 
-    it('revives state from saved extension_settings', () => {
+    it('creates a fresh state from inline marker syntax', async () => {
+        mockContext.characters[10].description = '[APPEARANCE] adult, wavy long black hair, brown eyes, small breasts\n\n[LORA] <lora:carmen_pd_v1:1>\n\n[OUTFIT] white blouse, black skirt, stockings';
+
+        await stateManager.initChat('test-chat-inline', 10);
+        const state = stateManager.getState();
+
+        expect(state.appearance.description).toBe('adult, wavy long black hair, brown eyes, small breasts');
+        expect(state.characterLora).toBe('<lora:carmen_pd_v1:1>');
+        expect(state.outfit).toEqual(['white blouse', 'black skirt', 'stockings']);
+    });
+
+    it('revives state from saved extension_settings', async () => {
         const dummySavedState = SceneState.createDefault('saved-chat-99', 'Bob').update({ pose: 'sitting' }).toJSON();
         global.extension_settings.EverLook.chatStates['saved-chat-99'] = dummySavedState;
 
-        stateManager.initChat('saved-chat-99');
+        await stateManager.initChat('saved-chat-99');
         const state = stateManager.getState();
 
         expect(state).not.toBeNull();
@@ -73,14 +84,14 @@ describe('StateManager', () => {
         expect(state.pose).toBe('sitting'); // Verifies it was revived properly
     });
 
-    it('falls back to fresh state if revived state JSON is invalid/corrupt', () => {
+    it('falls back to fresh state if revived state JSON is invalid/corrupt', async () => {
         // Feed it bad data (e.g. invalid type)
         global.extension_settings.EverLook.chatStates['corrupt-chat'] = { chatId: 'corrupt-chat', characterName: 12345 }; // number instead of string
 
         // Temporarily suppress console.error for clean test output
         const spyError = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-        stateManager.initChat('corrupt-chat', 10); // Should try to revive, fail, and fallback to fresh Character 10
+        await stateManager.initChat('corrupt-chat', 10); // Should try to revive, fail, and fallback to fresh Character 10
         const state = stateManager.getState();
 
         expect(state.chatId).toBe('corrupt-chat');
@@ -94,8 +105,8 @@ describe('StateManager', () => {
         expect(result).toBeNull();
     });
 
-    it('updates state immutably and saves to settings', () => {
-        stateManager.initChat('test-chat-1', 10);
+    it('updates state immutably and saves to settings', async () => {
+        await stateManager.initChat('test-chat-1', 10);
         const initialState = stateManager.getState();
         
         mockContext.saveSettingsDebounced.mockClear();
@@ -112,7 +123,7 @@ describe('StateManager', () => {
         expect(mockContext.saveSettingsDebounced).toHaveBeenCalledTimes(1);
     });
 
-    it('handles undefined ST context attributes gracefully when creating fresh state', () => {
+    it('handles undefined ST context attributes gracefully when creating fresh state', async () => {
         const spyError = jest.spyOn(console, 'error').mockImplementation(() => {});
         const spyWarn = jest.spyOn(console, 'warn').mockImplementation(() => {});
 
@@ -120,7 +131,7 @@ describe('StateManager', () => {
         const emptyContext = {};
         mockContext.characters = {}; 
 
-        stateManager.initChat('no-char-chat', 999);
+        await stateManager.initChat('no-char-chat', 999);
         const state = stateManager.getState();
 
         // Should fallback
@@ -132,6 +143,31 @@ describe('StateManager', () => {
         spyWarn.mockRestore();
         
         // Restore context for other tests
-        mockContext.characters = { 10: { name: 'Alice', description: 'A brave adventurer.', creator_notes: 'lora:brave:1' } };
+        mockContext.characters = { 10: { name: 'Alice', description: '[APPEARANCE]\nlong blonde hair, blue eyes\n\n[LORA]\n<lora:alice:1>\n\n[OUTFIT]\nschool uniform, skirt' } };
+    });
+
+    it('uses LLM fallback for appearance when [APPEARANCE] is missing', async () => {
+        const appearanceProviderFn = jest.fn().mockResolvedValue('{"appearance":["silver hair","green eyes"]}');
+        stateManager.setup(global.extension_settings, () => mockContext, { appearanceProviderFn });
+        mockContext.characters[10].description = 'A mysterious elf woman with silver hair and green eyes who guards the forest.';
+
+        await stateManager.initChat('test-chat-llm', 10);
+        const state = stateManager.getState();
+
+        expect(appearanceProviderFn).toHaveBeenCalledTimes(1);
+        expect(state.appearance.description).toBe('silver hair, green eyes');
+        expect(state.characterLora).toBeNull();
+        expect(state.outfit).toEqual([]);
+    });
+
+    it('skips lora when [LORA] marker is missing', async () => {
+        mockContext.characters[10].description = '[APPEARANCE]\nshort black hair\n\n[OUTFIT]\nblazer, pencil skirt';
+
+        await stateManager.initChat('test-chat-no-lora', 10);
+        const state = stateManager.getState();
+
+        expect(state.appearance.description).toBe('short black hair');
+        expect(state.characterLora).toBeNull();
+        expect(state.outfit).toEqual(['blazer', 'pencil skirt']);
     });
 });

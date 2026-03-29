@@ -4,6 +4,7 @@ export default {
     collectCoverageFrom: [
         'src/state/**/*.js',
         'src/analyzer/**/*.js',
+        'src/prompt/**/*.js',
     ],
     coverageThreshold: {
         global: {

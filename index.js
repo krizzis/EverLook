@@ -12,6 +12,7 @@ import {
     renderExtensionTemplateAsync,
     getContext,
 } from '../../../extensions.js';
+import { PromptBuilder } from './src/prompt/PromptBuilder.js';
 import { stateManager } from './src/state/StateManager.js';
 import {
     eventSource,
@@ -75,6 +76,25 @@ function saveSettings() {
 /** Convenience getter for current settings object. */
 function getSettings() {
     return extension_settings[EXTENSION_NAME];
+}
+
+/**
+ * Expose a tiny manual verification surface in the browser console.
+ * This keeps prompt debugging available before the full image hook lands.
+ */
+function registerDebugHelpers() {
+    globalThis.everlookDebug = {
+        getState() {
+            return stateManager.getState();
+        },
+        buildPrompt(sceneState = stateManager.getState()) {
+            const prompt = PromptBuilder.build(sceneState);
+            console.info(`[${EXTENSION_NAME}] Debug prompt:`, prompt);
+            return prompt;
+        },
+    };
+
+    console.info(`[${EXTENSION_NAME}] Debug helpers available at window.everlookDebug`);
 }
 
 // ── Settings UI ──────────────────────────────────────────────────────────────
@@ -209,7 +229,10 @@ jQuery(async () => {
         // 3. Render settings UI
         await renderSettings();
 
-        // 4. Register event handlers
+        // 4. Register debug helpers for manual verification
+        registerDebugHelpers();
+
+        // 5. Register event handlers
         eventSource.on(event_types.APP_READY, onAppReady);
         eventSource.on(event_types.CHAT_CHANGED, onChatChanged);
         eventSource.on(event_types.MESSAGE_RECEIVED, onMessageReceived);

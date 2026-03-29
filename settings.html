@@ -1,0 +1,39 @@
+<div class="extension_block">
+    <div class="inline-drawer">
+        <div class="inline-drawer-toggle inline-drawer-header">
+            <b>EverLook — Scene Tracker</b>
+            <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
+        </div>
+        <div class="inline-drawer-content">
+            <!-- General Settings -->
+            <h4>General</h4>
+            <div class="everlook__settings-row">
+                <input id="everlook_enabled" type="checkbox" />
+                <label for="everlook_enabled">Enable extension</label>
+            </div>
+            <div class="everlook__settings-row">
+                <input id="everlook_debug" type="checkbox" />
+                <label for="everlook_debug">Enable debug logging</label>
+            </div>
+
+            <hr class="everlook__divider" />
+
+            <!-- Tech-LLM Settings -->
+            <h4>Scene Analysis</h4>
+            <div class="everlook__settings-row">
+                <label for="everlook_confidence_threshold">Confidence threshold</label>
+                <input id="everlook_confidence_threshold" type="range" min="0" max="1" step="0.05" />
+                <span id="everlook_confidence_threshold_value">0.50</span>
+            </div>
+
+            <hr class="everlook__divider" />
+
+            <!-- Background Settings -->
+            <h4>Background</h4>
+            <div class="everlook__settings-row">
+                <input id="everlook_auto_background" type="checkbox" />
+                <label for="everlook_auto_background">Auto-update background on location change</label>
+            </div>
+        </div>
+    </div>
+</div>

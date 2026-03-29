@@ -91,6 +91,12 @@ The goal is to give users a seamless, context-aware visual experience without ma
 - Pose, emotion, and action values can be normalized to predefined lists (Danbooru tags)
 - Users understand basic SillyTavern extension installation workflow
 
+**Development Environment:**
+- SillyTavern installation path: `E:\AI_Tools\SillyTavern`
+- SillyTavern local URL: `http://127.0.0.1:8088/`
+- Extension install path: `E:\AI_Tools\SillyTavern\public\scripts\extensions\third-party\EverLook`
+- AI Assistant has **read-only access** to the SillyTavern codebase for API reference, import path verification, and event type inspection. No modifications to ST source are permitted.
+
 ---
 
 ## Stakeholders

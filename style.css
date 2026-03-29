@@ -1,0 +1,48 @@
+/* =========================================================
+ * EverLook — Scene Tracker Extension Styles
+ * ========================================================= */
+
+/* ----- Settings Panel ----- */
+.everlook__settings-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.everlook__settings-row label {
+    cursor: pointer;
+}
+
+.everlook__settings-row input[type="range"] {
+    flex: 1;
+    max-width: 200px;
+}
+
+.everlook__divider {
+    border: none;
+    border-top: 1px solid var(--SmartThemeBorderColor, #444);
+    margin: 0.75rem 0;
+}
+
+/* ----- Tracker Panel (placeholder — will be fleshed out in T-007) ----- */
+.everlook__tracker-panel {
+    display: none;
+    position: fixed;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 300px;
+    max-height: 80vh;
+    overflow-y: auto;
+    background: var(--SmartThemeBlurTintColor, rgba(0, 0, 0, 0.7));
+    border-left: 1px solid var(--SmartThemeBorderColor, #555);
+    padding: 1rem;
+    z-index: 1000;
+    color: var(--SmartThemeBodyColor, #eee);
+    font-size: 0.9rem;
+}
+
+.everlook__tracker-panel.active {
+    display: block;
+}

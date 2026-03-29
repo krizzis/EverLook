@@ -245,6 +245,7 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
 |------|---------|--------|
 | 2026-03-29 | Initial tracker created with T-000 through T-011 | AI Assistant |
 | 2026-03-29 | T-001 completed - moved to Completed section with evidence | AI Assistant |
+| 2026-03-29 | T-004 moved into Completed Tasks; tracker metadata aligned to T-005 as next implementation task | AI Assistant |
 | 2026-03-29 | T-005 completed - prompt builder implementation and evidence recorded | AI Assistant |
 
 ---

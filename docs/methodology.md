@@ -1,6 +1,6 @@
 # AI-Assisted Implementation Methodology (SSOT)
-**Version:** 1.1  
-**Last updated:** 2025-10-20  
+**Version:** 1.2  
+**Last updated:** 2026-03-29  
 **Status:** Single Source of Truth (SSOT). If any other doc conflicts with this, this file wins.
 
 ## 1. Purpose
@@ -20,7 +20,7 @@ Establish a deterministic, document-driven way to run multi-session, AI-assisted
 3) Plan a ≤1-day slice tied to acceptance criteria.  
 4) Implement with diffs/full files ready to paste.  
 5) Validate: commands + expected results.  
-6) Close with a **Closing Report** (§12) and update `handoff.md` (§4 schema).
+6) Close with a **Closing Report** (§12), update `handoff.md` (§4 schema), and review `todo.md` to refresh the next-session plan if the current task state changed.
 
 ## 4. Handoff schema (canonical)
 Every session must leave a `handoff.md` with exactly these sections:
@@ -72,6 +72,7 @@ Failures must be copied into the session and summarized in `handoff.md`.
 
 ## 10. Branching & PRs
 - Branch pattern: `feature/<slug>`; urgent fixes use `hotfix/<slug>`.  
+- Branch creation is not required for **status-only sessions** or **documents-only sessions** when no code changes are planned.  
 - Conventional commits recommended.  
 - Open a **draft PR** early; keep it small and cohesive.  
 - **PR checklist** (must be ticked before merge):
@@ -107,6 +108,8 @@ Failures must be copied into the session and summarized in `handoff.md`.
 **Risks & Unknowns:** …
 **Next steps (≤1 day each):** …
 ```
+
+**Session-close reminder:** Before ending the session, check `todo.md` and edit it if the near-term plan, priorities, or next session slice changed.
 
 ## 13. Versioning & governance
 - This file is the **SSOT**. Other docs (prompts, runbooks) must point here.  

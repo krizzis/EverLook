@@ -82,27 +82,25 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
 - Dependencies: T-001
 - Notes: Immutable pattern — update() returns new instances. Strict validation for daytime/weather (drives background search); advisory validation for pose/emotion/action (warns on unknown values from LLM). Outfit is type-checked only (string[] — structure subject to change per business requirements). Jest test infrastructure established (package.json + jest.config.js).
 
+## T-003 — [feature] State Manager: Init + Save/Restore
+- Owner: AI Assistant
+- Status: ✅ 100% | Dates: started 2026-03-29, completed 2026-03-29
+- Scope: scope.md § In Scope (multi-chat sequence)
+- Design: design.md §3.7 (Multi-Chat), §3.2 (State Layer)
+- Acceptance criteria:
+  - `StateManager.js` initializes from character card (getContext().characters) ✅
+  - State saves/restores keyed by `chatId` ✅
+  - State saves to `extension_settings.EverLook.chatStates` via `saveSettingsDebounced` ✅
+  - Unit tests verify initialization and swap operations ✅
+  - Test coverage ≥ 80% on new code (Currently 94.3% overall) ✅
+- Evidence:
+  - `StateManager.js` test suite passed.
+  - Overall coverage: 93.8% Statements, 87.1% Branches.
+- Dependencies: T-002
+
 ---
 
 ## Backlog (Not Started)
-
-
-
-## T-003 — [feature] State Manager: Init + Save/Restore
-- Owner: AI Assistant
-- Status: ⚪ 0% | Dates: planned start TBD
-- Scope: scope.md § In Scope (multi-chat state persistence)
-- Design: design.md §3.2 (State Layer), §3.7 (Multi-Chat Persistence)
-- Acceptance criteria:
-  - `StateManager.js` initializes scene state from character card data
-  - State saves to `extension_settings['EverLook'].chatStates[chatId]`
-  - State restores correctly on chat switch
-  - New chat creates fresh state (different chatId)
-  - `saveSettingsDebounced()` called after state saves
-  - Unit tests for init, save, restore, chat switch scenarios
-  - Test coverage ≥ 80% on new code
-- Evidence: Will be added when started
-- Dependencies: T-002
 
 ## T-004 — [feature] Turn-Pair Analyzer (Tech-LLM Integration)
 - Owner: AI Assistant
@@ -230,8 +228,8 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
 **Current highest number:** T-011  
 **Next task:** T-012
 
-**Tasks complete:** 3 (T-000, T-001, T-002)  
-**Tasks remaining:** 9 (T-003 through T-011)
+**Tasks complete:** 4 (T-000, T-001, T-002, T-003)  
+**Tasks remaining:** 8 (T-004 through T-011)
 
 ---
 

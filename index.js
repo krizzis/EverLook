@@ -12,6 +12,7 @@ import {
     renderExtensionTemplateAsync,
     getContext,
 } from '../../../extensions.js';
+import { stateManager } from './src/state/StateManager.js';
 import {
     eventSource,
     event_types,
@@ -151,7 +152,9 @@ function onChatChanged() {
     const context = getContext();
     console.info(`[${EXTENSION_NAME}] Chat changed → chatId=${context?.chatId ?? 'none'}`);
 
-    // TODO(T-003): StateManager.onChatChanged(context)
+    if (context && context.chatId) {
+        stateManager.initChat(context.chatId, context.characterId);
+    }
 }
 
 /**

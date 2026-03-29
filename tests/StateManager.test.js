@@ -1,0 +1,136 @@
+import { jest } from '@jest/globals';
+
+// Set up globals before importing the module under test
+global.extension_settings = {
+    EverLook: {
+        chatStates: {}
+    }
+};
+
+const mockContext = {
+    chatId: 'test-chat-1',
+    characterId: 10,
+    characters: {
+        10: {
+            name: 'Alice',
+            description: 'A brave adventurer.',
+            creator_notes: 'lora:brave:1'
+        }
+    },
+    saveSettingsDebounced: jest.fn()
+};
+
+// Mock the ST extensions.js module (virtual true since path doesn't exist locally)
+jest.unstable_mockModule('../../../../extensions.js', () => ({
+    extension_settings: global.extension_settings,
+    getContext: jest.fn(() => mockContext)
+}), { virtual: true });
+
+const { stateManager } = await import('../src/state/StateManager.js');
+const { SceneState } = await import('../src/state/SceneState.js');
+
+describe('StateManager', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+        global.extension_settings.EverLook.chatStates = {};
+        // Reset state
+        stateManager.initChat(null, null); // Forces reset
+    });
+
+    it('returns null state before initialization', () => {
+        expect(stateManager.getState()).toBeNull();
+    });
+
+    it('creates a fresh state from ST context if no saved data exists', () => {
+        stateManager.initChat('test-chat-1', 10);
+        const state = stateManager.getState();
+
+        expect(state).not.toBeNull();
+        expect(state.chatId).toBe('test-chat-1');
+        expect(state.characterName).toBe('Alice');
+        expect(state.appearance.description).toBe('A brave adventurer.');
+        expect(state.characterLora).toBe('lora:brave:1');
+
+        // It should have saved to settings immediately
+        const savedData = global.extension_settings.EverLook.chatStates['test-chat-1'];
+        expect(savedData).toBeDefined();
+        expect(savedData.chatId).toBe('test-chat-1');
+        // Debounce save called
+        expect(mockContext.saveSettingsDebounced).toHaveBeenCalledTimes(1);
+    });
+
+    it('revives state from saved extension_settings', () => {
+        const dummySavedState = SceneState.createDefault('saved-chat-99', 'Bob').update({ pose: 'sitting' }).toJSON();
+        global.extension_settings.EverLook.chatStates['saved-chat-99'] = dummySavedState;
+
+        stateManager.initChat('saved-chat-99');
+        const state = stateManager.getState();
+
+        expect(state).not.toBeNull();
+        expect(state.chatId).toBe('saved-chat-99');
+        expect(state.characterName).toBe('Bob');
+        expect(state.pose).toBe('sitting'); // Verifies it was revived properly
+    });
+
+    it('falls back to fresh state if revived state JSON is invalid/corrupt', () => {
+        // Feed it bad data (e.g. invalid type)
+        global.extension_settings.EverLook.chatStates['corrupt-chat'] = { chatId: 'corrupt-chat', characterName: 12345 }; // number instead of string
+
+        // Temporarily suppress console.error for clean test output
+        const spyError = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+        stateManager.initChat('corrupt-chat', 10); // Should try to revive, fail, and fallback to fresh Character 10
+        const state = stateManager.getState();
+
+        expect(state.chatId).toBe('corrupt-chat');
+        expect(state.characterName).toBe('Alice'); // Fallback fresh state extracted from char 10
+
+        spyError.mockRestore();
+    });
+
+    it('returns null from updateState if not initialized', () => {
+        const result = stateManager.updateState({ pose: 'standing' });
+        expect(result).toBeNull();
+    });
+
+    it('updates state immutably and saves to settings', () => {
+        stateManager.initChat('test-chat-1', 10);
+        const initialState = stateManager.getState();
+        
+        mockContext.saveSettingsDebounced.mockClear();
+
+        const newState = stateManager.updateState({ pose: 'standing' });
+
+        expect(newState).not.toBe(initialState);
+        expect(newState.pose).toBe('standing');
+        expect(stateManager.getState()).toBe(newState);
+
+        // Check if settings got updated
+        const savedData = global.extension_settings.EverLook.chatStates['test-chat-1'];
+        expect(savedData.pose).toBe('standing');
+        expect(mockContext.saveSettingsDebounced).toHaveBeenCalledTimes(1);
+    });
+
+    it('handles undefined ST context attributes gracefully when creating fresh state', () => {
+        const spyError = jest.spyOn(console, 'error').mockImplementation(() => {});
+        const spyWarn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+        // Mock context without character
+        const emptyContext = {};
+        mockContext.characters = {}; 
+
+        stateManager.initChat('no-char-chat', 999);
+        const state = stateManager.getState();
+
+        // Should fallback
+        expect(state.characterName).toBe('Unknown Character');
+        expect(state.appearance.description).toBe('');
+        expect(state.characterLora).toBeNull();
+
+        spyError.mockRestore();
+        spyWarn.mockRestore();
+        
+        // Restore context for other tests
+        mockContext.characters = { 10: { name: 'Alice', description: 'A brave adventurer.', creator_notes: 'lora:brave:1' } };
+    });
+});

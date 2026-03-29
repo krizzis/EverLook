@@ -2,61 +2,45 @@
 
 ## Context Snapshot
 - EverLook is a SillyTavern extension for scene state tracking during chat sessions (single active character)
-- Project scaffolding completed (T-001): full directory structure, manifest, entry point, settings, styles
-- Scene state data model completed (T-002): SceneState.js + constants.js with full validation and unit tests
-- Extension successfully loads and initializes automatically in SillyTavern 1.16.0
-- Settings panel renders with all controls (General, Scene Analysis, Background sections)
-- Architecture defined: 6 modules (StateManager, TurnPairAnalyzer, PromptBuilder, BackgroundSwitcher, TrackerPanel, ImageHook)
-- Jest test infrastructure established (package.json + jest.config.js) — ESM support via --experimental-vm-modules
-- 3 tasks complete (T-000, T-001, T-002); 9 remaining (T-003 through T-011)
-- Group chats explicitly out of scope for MVP
+- 4 tasks complete (T-000, T-001, T-002, T-003); 8 remaining (T-004 through T-011)
+- Data model (SceneState) and multi-chat persistence (StateManager) are implemented and fully unit-tested.
+- Extension initialization and `CHAT_CHANGED` hooks are wired to automatically read the current character and revive/create SceneState.
+- Group chats explicitly out of scope for MVP.
 
 ## Active Task(s)
-- T-003: State Manager: Init + Save/Restore — Acceptance: StateManager.js initializes from character card, saves/restores per chatId, calls saveSettingsDebounced(), unit tests ≥80% coverage
+- T-003: State Manager: Init + Save/Restore — ✅ Complete.
 
 ## Decisions Made
-- Client-side ST extension architecture (ADR-001: design.md §7.1)
-- Tech-LLM for scene analysis over rule-based extraction (ADR-002: design.md §7.2)
-- Danbooru tag normalization for prompt output (ADR-003: design.md §7.3)
-- Modular architecture with 6 components (design.md §1.2)
-- Scene state data model with typed attributes and predefined value lists (design.md §3.3)
-- Settings stored under `extension_settings['EverLook']` with defaultSettings merge pattern (index.js)
-- Events registered: APP_READY, CHAT_CHANGED, MESSAGE_RECEIVED, MESSAGE_SENT (index.js)
-- **Extension init pattern**: Use jQuery(async () => {...}) with direct extension_settings access. Do NOT call loadExtensionSettings() — it's a global bootstrap function, not per-extension API
-- **Template rendering**: Third-party extensions need `'third-party/EverLook'` prefix for renderExtensionTemplateAsync
-- **Development setup**: Directory junction from ST install path to repo (not symlink — avoids admin requirement)
-- **Validation strategy (T-002)**: Strict type validation + advisory value-list validation (warn on unknown pose/emotion/action, but accept). Strict validation for daytime/weather (drives background search — reject unknowns, fallback to default)
-- **Immutable state pattern (T-002)**: SceneState.update() returns new frozen instances — never mutates. Aligns with design.md §2.1 ("state updates are atomic")
-- **Outfit flexibility (T-002)**: Outfit is string[] with type-only validation (no value-list check) — structure subject to change per business requirements
-- **Test infrastructure (T-002)**: Jest 29 with ESM support via `node --experimental-vm-modules`. Windows: use `./node_modules/jest/bin/jest.js` directly (not `.bin/jest` which is a bash script)
+- **Extension init pattern**: Use jQuery(async () => {...}) with direct extension_settings access. Do NOT call loadExtensionSettings().
+- **Validation strategy (T-002)**: Strict type validation + advisory value-list validation for pose/emotion/action. Strict validation for daytime/weather.
+- **Immutable state pattern (T-002)**: SceneState.update() returns new frozen instances — never mutates.
+- **Debounced Save (T-003)**: Relies on ST's `saveSettingsDebounced()` callback to safely queue multi-chat switches without lagging UI.
+- **ST Module Mocking (T-003)**: Configured Jest `moduleNameMapper` natively to hijack `../../../../extensions.js` during unit testing, creating a clean mock boundary.
+- **Character Appearance Defaults (T-003)**: In absence of specialized extension structures, uses standard ST `.name`, `.description` (for appearance) and `.creator_notes` (for LoRA extraction fallback).
 
 ## Changes Since Last Session
-- src/state/constants.js (+175/-3): Complete implementation — POSES, EMOTIONS, ACTIONS, DAYTIMES, WEATHER arrays + normalize/isValidValue/normalizeAndWarn/normalizeStrict helpers
-- src/state/SceneState.js (+303/-5): Complete implementation — SceneState class with create/createDefault/fromJSON factories, immutable update(), toJSON(), validate(), full normalization
-- package.json (+12/-0): [NEW] Dev-only package.json with Jest
-- jest.config.js (+14/-0): [NEW] Jest config for ESM + 80% coverage threshold
-- tests/constants.test.js (+193/-0): [NEW] Comprehensive constants test suite (26 tests)
-- tests/SceneState.test.js (+350/-15): Complete test suite (81 tests) covering factory, validation, immutability, updates, serialization
+- `src/state/StateManager.js` (NEW): Singleton manager handling SceneState. Init via `initChat()`, save payload via `#saveState()`.
+- `index.js` (MODIFIED): Wired ST event hook `CHAT_CHANGED` into `StateManager`.
+- `tests/StateManager.test.js` (NEW): Full Jest suite handling mock validation across initialization, state upgrades, backwards fallback, and corrupt data loads.
+- `tests/__mocks__/extensions.js` (NEW): Module file to spoof ST's root module system safely in isolated environment.
+- `jest.config.js` (MODIFIED): Attached `moduleNameMapper` mappings to correctly direct ST mock modules locally.
 
 ## Validation & Evidence
-- Unit: 107/107 passing, 0 failed — 5 test suites all green
-- Coverage: constants.js 100%/100%/100%/100% | SceneState.js 93.81%/89.78%/100%/93.75%
-- Overall: 95.27% statements, 90.96% branches, 100% functions, 95.23% lines (exceeds 80% threshold)
-- Branch: `feat/T-002-scene-state`
+- Unit Tests: 132/132 tests green (6 suites)
+- Coverage: 93.8% Statements, 87.1% Branches. Global values above 80% threshold required by SSOT.
+- Branch: `feat/T-003-state-manager`
 
 ## Risks & Unknowns
-- Character card data structure for appearance extraction — not yet inspected — owner: AI Assistant — review: T-003
-- Tech-LLM prompt design for structured JSON output — may need iteration — owner: AI Assistant — review: T-004
-- Outfit attribute instability (per business requirements: "structure is subject to change") — owner: AI Assistant — review: ongoing
-- StateManager.js has 0% coverage (placeholder only — will be implemented in T-003)
+- Appearance and LoRA extraction limits: We rely on default ST objects (`description`, `creator_notes`). If users operate distinct World Info or regex extensions that overwrite these attributes heavily, further configuration may be required (Ongoing).
+- Tech-LLM prompt design for structured JSON output — owner: AI Assistant — review: T-004
 
 ## Next Steps
-1. Execute T-003: Implement StateManager with init from character card, save/restore per chatId
-2. Execute T-005: Implement PromptBuilder (depends on T-002, now complete)
-3. Verify settings persistence: toggle settings, refresh page, confirm values restored
+1. Execute T-004: Turn-Pair Analyzer (Tech-LLM Integration). Sends previous system response and user message to Tech-LLM to parse mutations.
+2. Formulate `tests/TurnPairAnalyzer.test.js` structure against mocked `sendGenerationRequest()`.
 
 ## Status Summary
-- ✅ 100% — T-000 (Documentation Bootstrap) complete
+- ✅ 100% — T-000 (Documentation) complete
 - ✅ 100% — T-001 (Project Scaffolding) complete — branch: `feat/T-001-scaffold`
-- ✅ 100% — T-002 (Scene State Data Model & Constants) complete — branch: `feat/T-002-scene-state`
-- ⚪ 0% — T-003 through T-011 (not started)
+- ✅ 100% — T-002 (Scene State) complete — branch: `feat/T-002-scene-state`
+- ✅ 100% — T-003 (State Manager) complete — branch: `feat/T-003-state-manager`
+- ⚪ 0% — T-004 through T-011 (not started)

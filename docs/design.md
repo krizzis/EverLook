@@ -289,6 +289,24 @@ Responsibilities:
 
 ### 3.3 Data Model
 
+#### Character Card Metadata Convention
+
+- EverLook reads `[APPEARANCE]` and `[LORA]` markers from the character `description` field.
+- Marker names are case-insensitive and occupy their own line.
+- Marked content continues until the next marker or the first blank-line paragraph break.
+- If `[APPEARANCE]` is missing, EverLook may perform a silent Tech-LLM extraction pass to derive Danbooru-style appearance tags from the full description.
+- If `[LORA]` is missing, EverLook leaves `characterLora` as `null` and does not infer a fallback.
+
+Example:
+
+```text
+[APPEARANCE]
+long blonde hair, blue eyes, school uniform
+
+[LORA]
+<lora:alice:1>
+```
+
 #### Scene State Object
 
 ```javascript

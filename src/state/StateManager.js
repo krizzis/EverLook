@@ -1,4 +1,6 @@
 import { SceneState } from './SceneState.js';
+import { appearanceExtractor } from '../analyzer/AppearanceExtractor.js';
+import { parseCharacterDescription } from './cardMetadata.js';
 
 /**
  * StateManager manages the Singleton instance of the active SceneState.
@@ -27,9 +29,10 @@ class StateManager {
      * @param {Object} extensionSettings Global ST extension settings
      * @param {Function} getContext ST context resolver
      */
-    setup(extensionSettings, getContextFn) {
+    setup(extensionSettings, getContextFn, options = {}) {
         this.#extensionSettings = extensionSettings;
         this.#getContext = getContextFn;
+        appearanceExtractor.setup(options.appearanceProviderFn);
     }
 
     /**
@@ -47,7 +50,7 @@ class StateManager {
      * @param {string} chatId 
      * @param {string} characterId 
      */
-    initChat(chatId, characterId) {
+    async initChat(chatId, characterId) {
         if (!chatId) {
             console.warn('[EverLook] StateManager.initChat called without a chatId.');
             this.#currentState = null;
@@ -73,10 +76,10 @@ class StateManager {
                 console.info(`[EverLook] SceneState revived for chat: ${chatId}`);
             } catch (err) {
                 console.error(`[EverLook] Failed to parse saved SceneState for chat: ${chatId}, falling back to default.`, err);
-                this.#currentState = this.#createFreshState(chatId, characterId);
+                this.#currentState = await this.#createFreshState(chatId, characterId);
             }
         } else {
-            this.#currentState = this.#createFreshState(chatId, characterId);
+            this.#currentState = await this.#createFreshState(chatId, characterId);
         }
     }
 
@@ -84,23 +87,40 @@ class StateManager {
      * Helper to scrape SillyTavern character data and instantiate a default state.
      * @private
      */
-    #createFreshState(chatId, characterId) {
+    async #createFreshState(chatId, characterId) {
         let name = 'Unknown Character';
-        let appearanceDesc = '';
         let lora = null;
+        let rawDescription = '';
         
         try {
             const context = typeof this.#getContext === 'function' ? this.#getContext() : null;
             if (context && context.characters && context.characters[characterId]) {
                 const charData = context.characters[characterId];
                 name = charData.name || charData.data?.name || name;
-                appearanceDesc = charData.description || charData.data?.description || '';
-                lora = charData.creator_notes || charData.data?.creator_notes || null; // Fallback, ST format varies
+                rawDescription = charData.description || charData.data?.description || '';
             } else {
                 console.warn(`[EverLook] Could not find character data for ID: ${characterId}`);
             }
         } catch (err) {
             console.error('[EverLook] Failed to extract character data from ST context.', err);
+        }
+
+        const parsed = parseCharacterDescription(rawDescription);
+        let appearanceDesc = parsed.appearance || '';
+        lora = parsed.lora || null;
+
+        if (!parsed.hasAppearanceMarker && parsed.rawDescription) {
+            const extractedAppearance = await appearanceExtractor.extract(parsed.rawDescription);
+            if (extractedAppearance) {
+                appearanceDesc = extractedAppearance;
+                console.info('[EverLook] Appearance initialized from LLM fallback.');
+            } else {
+                console.warn('[EverLook] No [APPEARANCE] marker found and LLM fallback did not produce appearance tags.');
+            }
+        }
+
+        if (!parsed.hasLoraMarker && parsed.rawDescription) {
+            console.info('[EverLook] No [LORA] marker found; character lora will be omitted.');
         }
 
         const newState = SceneState.createDefault(chatId, name, lora, appearanceDesc);

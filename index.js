@@ -167,7 +167,7 @@ function onAppReady() {
  * Called when the active chat changes (switch character, switch chat, new chat).
  * Will be wired to StateManager.onChatChanged in T-003.
  */
-function onChatChanged() {
+async function onChatChanged() {
     const s = getSettings();
     if (!s.enabled) return;
 
@@ -175,7 +175,7 @@ function onChatChanged() {
     console.info(`[${EXTENSION_NAME}] Chat changed → chatId=${context?.chatId ?? 'none'}`);
 
     if (context && context.chatId) {
-        stateManager.initChat(context.chatId, context.characterId);
+        await stateManager.initChat(context.chatId, context.characterId);
     }
 }
 

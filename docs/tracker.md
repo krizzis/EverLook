@@ -104,18 +104,21 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
 
 ## T-004 — [feature] Turn-Pair Analyzer (Tech-LLM Integration)
 - Owner: AI Assistant
-- Status: ⚪ 0% | Dates: planned start TBD
+- Status: ✅ 100% | Dates: started 2026-03-29, completed 2026-03-29
 - Scope: scope.md § In Scope (turn-pair analysis via Tech-LLM)
 - Design: design.md §3.6 (Turn-Pair Analysis Flow), §3.2 (Analyzer Layer)
 - Acceptance criteria:
-  - `TurnPairAnalyzer.js` constructs structured prompts with current turn pair + state context
-  - Silent request sent to Tech-LLM via ST connection API
-  - Parses structured JSON response (changed attributes + confidence)
-  - Confidence threshold gating works (configurable, skip below threshold)
-  - All changes/skips logged to console
-  - Unit tests with mocked LLM responses
-  - Test coverage ≥ 80% on new code
-- Evidence: Will be added when started
+  - `TurnPairAnalyzer.js` constructs structured prompts with current turn pair + state context ✅
+  - Silent request sent to Tech-LLM via ST connection API ✅ 
+  - Parses structured JSON response (changed attributes + confidence) ✅
+  - Confidence threshold gating works (configurable, skip below threshold) ✅
+  - All changes/skips logged to console ✅
+  - Unit tests with mocked LLM responses ✅
+  - Test coverage ≥ 80% on new code ✅
+- Evidence: 
+  - Tests: 134/134 passing
+  - Coverage: 94.64% Statements, `TurnPairAnalyzer.js` & `prompts.js`
+  - Branch: `feat/T-004-turn-pair-analyzer`
 - Dependencies: T-003
 
 ## T-005 — [feature] Prompt Builder (Danbooru Tag Generation)
@@ -228,8 +231,8 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
 **Current highest number:** T-011  
 **Next task:** T-012
 
-**Tasks complete:** 4 (T-000, T-001, T-002, T-003)  
-**Tasks remaining:** 8 (T-004 through T-011)
+**Tasks complete:** 5 (T-000, T-001, T-002, T-003, T-004)  
+**Tasks remaining:** 7 (T-005 through T-011)
 
 ---
 

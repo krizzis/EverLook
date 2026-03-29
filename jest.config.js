@@ -3,6 +3,7 @@ export default {
     testMatch: ['**/tests/**/*.test.js'],
     collectCoverageFrom: [
         'src/state/**/*.js',
+        'src/analyzer/**/*.js',
     ],
     coverageThreshold: {
         global: {

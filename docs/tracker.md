@@ -62,24 +62,31 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
 
 ---
 
-## Backlog (Not Started)
-
-
-
 ## T-002 — [feature] Scene State Data Model & Constants
 - Owner: AI Assistant
-- Status: ⚪ 0% | Dates: planned start TBD
+- Status: ✅ 100% | Dates: started 2026-03-29, completed 2026-03-29
 - Scope: scope.md § In Scope (scene state data model)
 - Design: design.md §3.3 (Data Model), §3.2 (State Layer)
 - Acceptance criteria:
-  - `SceneState.js` implements the data model from design.md §3.3
-  - All attributes have proper types and validation
-  - `constants.js` defines predefined lists for pose, emotion, action, daytime, weather
-  - Normalization function validates values against predefined lists
-  - Unit tests cover: valid state creation, invalid value rejection, null/empty handling
-  - Test coverage ≥ 80% on new code
-- Evidence: Will be added when started
+  - `SceneState.js` implements the data model from design.md §3.3 ✅
+  - All attributes have proper types and validation ✅
+  - `constants.js` defines predefined lists for pose, emotion, action, daytime, weather ✅
+  - Normalization function validates values against predefined lists ✅
+  - Unit tests cover: valid state creation, invalid value rejection, null/empty handling ✅
+  - Test coverage ≥ 80% on new code ✅
+- Evidence:
+  - constants.js: 100% statements, 100% branches, 100% functions, 100% lines
+  - SceneState.js: 93.81% statements, 89.78% branches, 100% functions, 93.75% lines
+  - Tests: 107 passed, 0 failed (5 suites)
+  - Branch: `feat/T-002-scene-state`
 - Dependencies: T-001
+- Notes: Immutable pattern — update() returns new instances. Strict validation for daytime/weather (drives background search); advisory validation for pose/emotion/action (warns on unknown values from LLM). Outfit is type-checked only (string[] — structure subject to change per business requirements). Jest test infrastructure established (package.json + jest.config.js).
+
+---
+
+## Backlog (Not Started)
+
+
 
 ## T-003 — [feature] State Manager: Init + Save/Restore
 - Owner: AI Assistant
@@ -223,8 +230,8 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
 **Current highest number:** T-011  
 **Next task:** T-012
 
-**Tasks complete:** 2 (T-000, T-001)  
-**Tasks remaining:** 10 (T-002 through T-011)
+**Tasks complete:** 3 (T-000, T-001, T-002)  
+**Tasks remaining:** 9 (T-003 through T-011)
 
 ---
 

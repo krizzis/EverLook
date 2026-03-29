@@ -1,7 +1,7 @@
 # tracker.md
 
 **Version:** 1.4
-**Last updated:** 2026-03-29
+**Last updated:** 2026-03-30
 **Status:** Active task tracking - single source of truth for work items
 
 ---
@@ -235,7 +235,7 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
 
 ## T-012 - [tech-debt] Init-Time Scene Extraction for Starting Pose/Emotion/Location
 - Owner: AI Assistant
-- Status: ๐”ต 90% | Dates: started 2026-03-29, updated 2026-03-29
+- Status: ๐”ต 92% | Dates: started 2026-03-29, updated 2026-03-30
 - Scope: `scope.md` ยง In Scope (scene state initialization from character card + scenario/first message)
 - Design: `design.md` ยง3.3 (Character Card Metadata Convention), `design.md` ยง3.6 (Turn-Pair Analysis Flow)
 - Acceptance criteria:
@@ -253,19 +253,39 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
   - `index.js` now uses SillyTavern's exported `generateQuietPrompt` for appearance fallback, init extraction, and runtime turn-pair analysis
   - Full test run: 197/197 passing across 12 suites
   - Coverage: 92.15% statements, 80.79% branches, 96.39% functions, 93.02% lines
+  - Stabilization pass: Variant A runtime/init prompt guidance tightened to discourage compound emotion labels, mixed weather/daytime phrases, and missed borrowed-clothing outfit changes
+  - Runtime guard: `SceneRuntimeController` now catches invalid extracted change payloads during state application and logs one clear warning while preserving the existing state
+  - Focused validation: 26/26 passing across `TurnPairAnalyzer`, `SceneRuntimeController`, and `InitSceneExtractor`
   - Validation command: `node --experimental-vm-modules ./node_modules/jest/bin/jest.js --coverage --runInBand`
+  - Focused validation command: `node --experimental-vm-modules ./node_modules/jest/bin/jest.js tests/TurnPairAnalyzer.test.js tests/SceneRuntimeController.test.js tests/InitSceneExtractor.test.js --runInBand`
 - Dependencies: T-003, T-004
-- Notes: Scope expanded during the 2026-03-29 session to absorb the previously informal T-004/T-006 runtime wiring follow-up so init extraction and live runtime analysis ship as one cohesive slice. Remaining work is live SillyTavern verification of the new quiet-generation/runtime path.
+- Notes: Scope expanded during the 2026-03-29 session to absorb the previously informal T-004/T-006 runtime wiring follow-up so init extraction and live runtime analysis ship as one cohesive slice. Remaining work is live SillyTavern verification of the new quiet-generation/runtime path plus extractor-quality review now tracked in T-013.
+
+---
+
+## T-013 - [spike] Extractor Testing & Requirement Clarification
+- Owner: AI Assistant
+- Status: โช 0% | Dates: planned start TBD
+- Scope: `scope.md` ง Success Metrics (attribute change detection accuracy), `scope.md` ง In Scope (turn-pair analysis via Tech-LLM)
+- Design: `design.md` ง2.2 (Error Handling Strategy), `design.md` ง3.3 (Data Model), `design.md` ง3.6 (Turn-Pair Analysis Flow), `design.md` ง5.2 (Tech Debt Tracking)
+- Acceptance criteria:
+  - Assemble a manually verified extractor test set from real chat turn pairs covering pose, emotion, location, action, outfit, and no-change cases
+  - Clarify expected extractor semantics for visible emotion labels, outfit-change rules, action vocabulary boundaries, and location normalization limits
+  - Compare current extractor outputs against the verified examples and document at least the top failure patterns with reproduction text
+  - Recommend prompt, schema, vocabulary, or post-processing changes with explicit tradeoffs
+  - Session produces docs/test-plan artifacts only; no production code changes are made during the clarification pass
+- Evidence: Will be added when started
+- Dependencies: T-012
 
 ---
 
 ## Task Numbering
 
-**Current highest number:** T-012  
-**Next task:** T-013
+**Current highest number:** T-013  
+**Next task:** T-014
 
 **Tasks complete:** 8 (T-000 through T-007)  
-**Tasks remaining:** 5 (T-008 through T-012)
+**Tasks remaining:** 6 (T-008 through T-013)
 
 ---
 
@@ -282,6 +302,7 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
 | 2026-03-29 | T-007 advanced to in-progress with implemented tracker panel, reactive state seam, slash command toggle, and full Jest evidence | AI Assistant |
 | 2026-03-29 | T-007 completed after manual SillyTavern verification confirmed tracker panel usability | AI Assistant |
 | 2026-03-29 | T-012 advanced to in-progress after adding silent init extraction, live runtime Tech-LLM wiring, background sync integration, and full Jest coverage evidence | AI Assistant |
+| 2026-03-30 | T-012 stabilization pass tightened Variant A prompts, added runtime validation-guard behavior, and introduced T-013 for extractor testing/requirements clarification | AI Assistant |
 
 ---
 

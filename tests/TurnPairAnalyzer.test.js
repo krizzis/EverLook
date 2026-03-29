@@ -36,6 +36,12 @@ describe('TurnPairAnalyzer', () => {
         expect(() => turnPairAnalyzer.setup('not-a-function')).toThrow(TypeError);
     });
 
+    it('uses the tightened variant A runtime prompt guidance', () => {
+        expect(SYSTEM_PROMPT).toContain('Emotion must describe a visible expression');
+        expect(SYSTEM_PROMPT).toContain('Do not combine them into phrases like "cool evening"');
+        expect(SYSTEM_PROMPT).toContain('Borrowed, draped, or newly worn clothing counts as an outfit change.');
+    });
+
     it('successfully extracts and returns valid changes above confidence threshold', async () => {
         const mockedJson = {
             changes: {

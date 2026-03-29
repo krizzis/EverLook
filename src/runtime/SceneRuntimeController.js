@@ -104,7 +104,22 @@ export class SceneRuntimeController {
             return {};
         }
 
-        const updatedState = this.#stateManager.updateState(changes);
+        let updatedState;
+        try {
+            updatedState = this.#stateManager.updateState(changes);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            this.#logger.warn?.(
+                `[EverLook] Runtime scene update skipped: extracted changes failed state validation. State unchanged. ${message}`,
+            );
+            return {
+                turnPair,
+                changes,
+                updatedState: null,
+                skipped: true,
+                reason: 'invalid_scene_update',
+            };
+        }
 
         if (settings.autoBackground && Object.prototype.hasOwnProperty.call(changes, 'location')) {
             await this.syncBackground(updatedState?.location);

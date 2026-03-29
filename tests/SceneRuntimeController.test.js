@@ -179,4 +179,42 @@ describe('SceneRuntimeController', () => {
             weather: 'clear',
         })).resolves.toBeNull();
     });
+
+    test('warns and preserves runtime flow when extracted changes fail state validation', async () => {
+        const warn = jest.fn();
+        analyzer.analyze.mockResolvedValue({
+            emotion: 'smiling',
+            location: { name: 'park', daytime: 'evening', weather: 'cool evening' },
+        });
+        stateManager.updateState.mockImplementation(() => {
+            throw new Error('SceneState validation failed: location.weather is invalid.');
+        });
+
+        controller = new SceneRuntimeController({
+            getContextFn: () => context,
+            stateManager,
+            analyzer,
+            backgroundSwitcher,
+            getSettings: () => settings,
+            logger: { warn },
+        });
+        controller.setup({ providerFn: jest.fn() });
+        controller.captureUserMessage(0);
+
+        await expect(controller.handleCharacterMessage(1, 'normal')).resolves.toEqual({
+            turnPair: {
+                userMessage: 'Sit with me.',
+                characterResponse: '*She sits on the bench and smiles.*',
+            },
+            changes: {
+                emotion: 'smiling',
+                location: { name: 'park', daytime: 'evening', weather: 'cool evening' },
+            },
+            updatedState: null,
+            skipped: true,
+            reason: 'invalid_scene_update',
+        });
+        expect(warn).toHaveBeenCalledWith(expect.stringContaining('Runtime scene update skipped'));
+        expect(backgroundSwitcher.switch).not.toHaveBeenCalled();
+    });
 });

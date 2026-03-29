@@ -13,9 +13,11 @@ Rules:
 1. Infer only what is visually or situationally reliable from the provided scenario and opening character message.
 2. Use lowercase concise tags for pose and emotion.
 3. Keep location.name short and lowercase.
-4. Use null for any field that cannot be inferred reliably.
-5. Do not invent outfit, action, or appearance details.
-6. Return JSON only, with no markdown fences or prose.`;
+4. Emotion must describe a visible expression or immediate affect, not a personality trait or relationship label.
+5. Use simple location.daytime and location.weather labels only. Do not combine them into phrases like "cool evening" or "warm glow".
+6. Use null for any field that cannot be inferred reliably.
+7. Do not invent outfit, action, or appearance details.
+8. Return JSON only, with no markdown fences or prose.`;
 
 export function buildInitScenePrompt({ scenario = '', firstMessage = '', currentState = null } = {}) {
     const scenarioText = typeof scenario === 'string' ? scenario.trim() : '';

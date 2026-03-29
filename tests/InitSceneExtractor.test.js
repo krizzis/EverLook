@@ -2,6 +2,14 @@ import { jest } from '@jest/globals';
 import { buildInitScenePrompt, InitSceneExtractor, INIT_SCENE_SYSTEM_PROMPT } from '../src/analyzer/InitSceneExtractor.js';
 
 describe('InitSceneExtractor', () => {
+    beforeEach(() => {
+        jest.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
     test('builds a prompt from scenario and first message context', () => {
         const prompt = buildInitScenePrompt({
             scenario: 'A rainy night in the city.',
@@ -14,6 +22,11 @@ describe('InitSceneExtractor', () => {
         expect(prompt).toContain('FIRST CHARACTER MESSAGE:');
         expect(prompt).toContain('streetlamp');
         expect(prompt).toContain('"pose": null');
+    });
+
+    test('uses the tightened init prompt guidance', () => {
+        expect(INIT_SCENE_SYSTEM_PROMPT).toContain('Emotion must describe a visible expression');
+        expect(INIT_SCENE_SYSTEM_PROMPT).toContain('Do not combine them into phrases like "cool evening"');
     });
 
     test('returns null when no provider is configured', async () => {

@@ -227,15 +227,31 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
 - Evidence: Will be added when started
 - Dependencies: T-010
 
+## T-012 - [tech-debt] Init-Time Scene Extraction for Starting Pose/Emotion/Location
+- Owner: AI Assistant
+- Status: ⚪ 0% | Dates: planned start TBD
+- Scope: `scope.md` § In Scope (scene state initialization from character card + scenario/first message)
+- Design: `design.md` §3.3 (Character Card Metadata Convention), `design.md` §3.6 (Turn-Pair Analysis Flow)
+- Acceptance criteria:
+  - Silent Tech-LLM init pass derives starting `pose`, `emotion`, and `location` from scenario plus the character's first message
+  - Initialization remains silent and does not emit visible chat content
+  - Extraction runs only when those fields are still unset/defaulted after normal card-based init
+  - Failures preserve safe defaults and log a warning instead of blocking chat initialization
+  - Unit tests cover prompt construction, successful seeding, and failure/no-op behavior
+  - Test coverage ≥ 80% on new code
+- Evidence: Will be added when started
+- Dependencies: T-003, T-004
+- Notes: This is intentionally deferred follow-up work after marker-based card initialization and should reuse the injected provider pattern already used for appearance extraction.
+
 ---
 
 ## Task Numbering
 
-**Current highest number:** T-011  
-**Next task:** T-012
+**Current highest number:** T-012  
+**Next task:** T-013
 
 **Tasks complete:** 6 (T-000, T-001, T-002, T-003, T-004, T-005)  
-**Tasks remaining:** 6 (T-006 through T-011)
+**Tasks remaining:** 7 (T-006 through T-012)
 
 ---
 
@@ -247,6 +263,7 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
 | 2026-03-29 | T-001 completed - moved to Completed section with evidence | AI Assistant |
 | 2026-03-29 | T-004 moved into Completed Tasks; tracker metadata aligned to T-005 as next implementation task | AI Assistant |
 | 2026-03-29 | T-005 completed - prompt builder implementation and evidence recorded | AI Assistant |
+| 2026-03-29 | Added T-012 for deferred silent init extraction of starting pose, emotion, and location | AI Assistant |
 
 ---
 

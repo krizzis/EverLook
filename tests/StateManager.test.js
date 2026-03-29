@@ -13,7 +13,7 @@ const mockContext = {
     characters: {
         10: {
             name: 'Alice',
-            description: '[APPEARANCE]\nlong blonde hair, blue eyes\n\n[LORA]\n<lora:alice:1>'
+            description: '[APPEARANCE]\nlong blonde hair, blue eyes\n\n[LORA]\n<lora:alice:1>\n\n[OUTFIT]\nschool uniform, skirt'
         }
     },
     saveSettingsDebounced: jest.fn()
@@ -50,6 +50,7 @@ describe('StateManager', () => {
         expect(state.characterName).toBe('Alice');
         expect(state.appearance.description).toBe('long blonde hair, blue eyes');
         expect(state.characterLora).toBe('<lora:alice:1>');
+        expect(state.outfit).toEqual(['school uniform', 'skirt']);
 
         // It should have saved to settings immediately
         const savedData = global.extension_settings.EverLook.chatStates['test-chat-1'];
@@ -60,13 +61,14 @@ describe('StateManager', () => {
     });
 
     it('creates a fresh state from inline marker syntax', async () => {
-        mockContext.characters[10].description = '[APPEARANCE] adult, wavy long black hair, brown eyes, small breasts\n\n[LORA] <lora:carmen_pd_v1:1>';
+        mockContext.characters[10].description = '[APPEARANCE] adult, wavy long black hair, brown eyes, small breasts\n\n[LORA] <lora:carmen_pd_v1:1>\n\n[OUTFIT] white blouse, black skirt, stockings';
 
         await stateManager.initChat('test-chat-inline', 10);
         const state = stateManager.getState();
 
         expect(state.appearance.description).toBe('adult, wavy long black hair, brown eyes, small breasts');
         expect(state.characterLora).toBe('<lora:carmen_pd_v1:1>');
+        expect(state.outfit).toEqual(['white blouse', 'black skirt', 'stockings']);
     });
 
     it('revives state from saved extension_settings', async () => {
@@ -141,7 +143,7 @@ describe('StateManager', () => {
         spyWarn.mockRestore();
         
         // Restore context for other tests
-        mockContext.characters = { 10: { name: 'Alice', description: '[APPEARANCE]\nlong blonde hair, blue eyes\n\n[LORA]\n<lora:alice:1>' } };
+        mockContext.characters = { 10: { name: 'Alice', description: '[APPEARANCE]\nlong blonde hair, blue eyes\n\n[LORA]\n<lora:alice:1>\n\n[OUTFIT]\nschool uniform, skirt' } };
     });
 
     it('uses LLM fallback for appearance when [APPEARANCE] is missing', async () => {
@@ -155,15 +157,17 @@ describe('StateManager', () => {
         expect(appearanceProviderFn).toHaveBeenCalledTimes(1);
         expect(state.appearance.description).toBe('silver hair, green eyes');
         expect(state.characterLora).toBeNull();
+        expect(state.outfit).toEqual([]);
     });
 
     it('skips lora when [LORA] marker is missing', async () => {
-        mockContext.characters[10].description = '[APPEARANCE]\nshort black hair\n\nSome extra prose';
+        mockContext.characters[10].description = '[APPEARANCE]\nshort black hair\n\n[OUTFIT]\nblazer, pencil skirt';
 
         await stateManager.initChat('test-chat-no-lora', 10);
         const state = stateManager.getState();
 
         expect(state.appearance.description).toBe('short black hair');
         expect(state.characterLora).toBeNull();
+        expect(state.outfit).toEqual(['blazer', 'pencil skirt']);
     });
 });

@@ -5,7 +5,7 @@
 - 6 tasks are now complete: T-000 through T-005.
 - Scene state, per-chat persistence, Tech-LLM turn-pair analysis, and deterministic prompt generation are implemented and covered by Jest.
 - Prompt generation now follows the required order and handles interaction tags, empty outfit fallback, and optional-field omission deterministically.
-- Character initialization now reads `[APPEARANCE]` and `[LORA]` markers from the character description, with optional silent LLM fallback for appearance only.
+- Character initialization now reads `[APPEARANCE]`, `[LORA]`, and `[OUTFIT]` markers from the character description, with optional silent LLM fallback for appearance only.
 - Group chats remain explicitly out of scope for MVP.
 
 ## Active Task(s)
@@ -15,7 +15,7 @@
 - T-004 kept the analyzer decoupled from the concrete ST generation provider via injected `providerFn`.
 - T-005 implements prompt generation as a pure static formatter so it can be reused by future image-hook and context-injection tasks without side effects.
 - T-005 preserves the character lora trigger string casing while normalizing other textual tags to lowercase to avoid mangling external trigger syntax.
-- Character card convention: `[APPEARANCE]` and `[LORA]` live in the description field; missing `[LORA]` is skipped, while missing `[APPEARANCE]` can use a silent extractor when a provider is available.
+- Character card convention: `[APPEARANCE]`, `[LORA]`, and `[OUTFIT]` live in the description field; missing `[LORA]` is skipped, while missing `[APPEARANCE]` can use a silent extractor when a provider is available.
 
 ## Changes Since Last Session
 - `src/prompt/PromptBuilder.js` (+108/-0): Implemented deterministic Danbooru-style prompt generation helpers.
@@ -37,11 +37,12 @@
 - ST Global Provider Binding: need to trace the exact SillyTavern global/provider entry point when wiring analyzer execution in `index.js` for later integration tasks. - owner: AI Assistant - review: 2026-03-31
 - Background API surface still needs verification against the local SillyTavern codebase before T-006 implementation to avoid guessing unsupported calls. - owner: AI Assistant - review: 2026-03-31
 - Appearance fallback is implemented via injected provider contract, but the concrete ST Tech-LLM binding for init-time calls still needs to be wired in runtime code. - owner: AI Assistant - review: 2026-03-31
+- Starting pose/emotion/location are still default-seeded; add a silent Tech-LLM init pass that reads scenario plus the character's first message so those fields start with meaningful values before normal turn analysis. - owner: AI Assistant - review: 2026-03-31
 
 ## Next Steps
 1. Implement T-006 Background Switcher against the documented/local ST background API.
-2. Wire T-005 into the future image-generation hook (T-008) once the pipeline interception point is confirmed.
-3. Reconcile or replace the stale `docs/todo.md` kickoff plan so it no longer conflicts with current tracker/handoff state.
+2. Add the pending silent Tech-LLM init extraction for starting pose, emotion, and location from scenario plus the character's first message.
+3. Wire T-005 into the future image-generation hook (T-008) once the pipeline interception point is confirmed.
 
 ## Status Summary
 - ✅ 100% - T-000 (Documentation)

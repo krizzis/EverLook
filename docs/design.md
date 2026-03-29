@@ -291,11 +291,13 @@ Responsibilities:
 
 #### Character Card Metadata Convention
 
-- EverLook reads `[APPEARANCE]` and `[LORA]` markers from the character `description` field.
+- EverLook reads `[APPEARANCE]`, `[LORA]`, and `[OUTFIT]` markers from the character `description` field.
 - Marker names are case-insensitive and occupy their own line.
 - Marked content continues until the next marker or the first blank-line paragraph break.
 - If `[APPEARANCE]` is missing, EverLook may perform a silent Tech-LLM extraction pass to derive Danbooru-style appearance tags from the full description.
 - If `[LORA]` is missing, EverLook leaves `characterLora` as `null` and does not infer a fallback.
+- `[OUTFIT]` seeds the initial outfit array when present.
+- Future init follow-up: EverLook should add a silent Tech-LLM extraction pass for starting `pose`, `emotion`, and `location` using the scenario plus the character's first message.
 
 Example:
 
@@ -305,6 +307,9 @@ long blonde hair, blue eyes, school uniform
 
 [LORA]
 <lora:alice:1>
+
+[OUTFIT]
+school uniform, skirt
 ```
 
 #### Scene State Object

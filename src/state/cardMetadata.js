@@ -4,13 +4,14 @@
  * EverLook supports explicit character description markers:
  *   [APPEARANCE]
  *   [LORA]
+ *   [OUTFIT]
  *
  * Marker names are case-insensitive. Content continues until the next marker
  * or end of text.
  */
 
-const MARKERS = Object.freeze(['APPEARANCE', 'LORA']);
-const MARKER_LINE_PATTERN = /^\s*\[(APPEARANCE|LORA)\](.*)$/i;
+const MARKERS = Object.freeze(['APPEARANCE', 'LORA', 'OUTFIT']);
+const MARKER_LINE_PATTERN = /^\s*\[(APPEARANCE|LORA|OUTFIT)\](.*)$/i;
 
 function normalizeSectionBody(value) {
     if (typeof value !== 'string') {
@@ -32,9 +33,11 @@ export function parseCharacterDescription(description) {
         return {
             appearance: null,
             lora: null,
+            outfit: [],
             rawDescription: '',
             hasAppearanceMarker: false,
             hasLoraMarker: false,
+            hasOutfitMarker: false,
         };
     }
 
@@ -80,8 +83,13 @@ export function parseCharacterDescription(description) {
     return {
         appearance: sections.get('APPEARANCE') ?? null,
         lora: sections.get('LORA') ?? null,
+        outfit: (sections.get('OUTFIT') ?? '')
+            .split(',')
+            .map(item => item.trim())
+            .filter(Boolean),
         rawDescription: description.trim(),
         hasAppearanceMarker: sections.has('APPEARANCE'),
         hasLoraMarker: sections.has('LORA'),
+        hasOutfitMarker: sections.has('OUTFIT'),
     };
 }

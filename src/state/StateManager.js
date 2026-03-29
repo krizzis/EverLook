@@ -108,6 +108,7 @@ class StateManager {
         const parsed = parseCharacterDescription(rawDescription);
         let appearanceDesc = parsed.appearance || '';
         lora = parsed.lora || null;
+        const outfit = parsed.outfit || [];
 
         if (!parsed.hasAppearanceMarker && parsed.rawDescription) {
             const extractedAppearance = await appearanceExtractor.extract(parsed.rawDescription);
@@ -123,7 +124,20 @@ class StateManager {
             console.info('[EverLook] No [LORA] marker found; character lora will be omitted.');
         }
 
-        const newState = SceneState.createDefault(chatId, name, lora, appearanceDesc);
+        // TODO(T-012): Add a silent Tech-LLM init pass that derives starting pose,
+        // emotion, and location from the active scenario plus the character's
+        // first message before the first turn-pair analysis runs.
+        const newState = SceneState.create({
+            chatId,
+            characterName: name,
+            characterLora: lora,
+            appearance: { description: appearanceDesc },
+            pose: null,
+            emotion: null,
+            location: { name: null, daytime: 'day', weather: 'clear' },
+            action: { name: null, interaction: false },
+            outfit,
+        });
         console.info(`[EverLook] SceneState created for chat: ${chatId}`);
         
         this.#currentState = newState;

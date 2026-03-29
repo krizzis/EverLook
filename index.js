@@ -22,8 +22,8 @@ import {
     saveSettingsDebounced,
 } from '../../../../script.js';
 import { background_settings } from '../../../backgrounds.js';
-import { SlashCommand } from '../../../../slash-commands/SlashCommand.js';
-import { SlashCommandParser } from '../../../../slash-commands/SlashCommandParser.js';
+import { SlashCommand } from '../../../slash-commands/SlashCommand.js';
+import { SlashCommandParser } from '../../../slash-commands/SlashCommandParser.js';
 import { backgroundSwitcher } from './src/background/BackgroundSwitcher.js';
 
 const EXTENSION_NAME = 'EverLook';

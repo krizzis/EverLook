@@ -138,25 +138,31 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
 - Dependencies: T-002
 - Notes: Implemented as a pure static formatter to keep T-008 and T-009 integration straightforward.
 
----
-
-## Backlog (Not Started)
-
 ## T-006 - [feature] Background Switcher
 - Owner: AI Assistant
-- Status: ⚪ 0% | Dates: planned start TBD
+- Status: ✅ 100% | Dates: started 2026-03-29, completed 2026-03-29
 - Scope: `scope.md` § In Scope (dynamic background set)
 - Design: `design.md` §3.5 (Background Search Strategy), §3.2 (Background Layer)
 - Acceptance criteria:
-  - `BackgroundSwitcher.js` implements cascading search: `name+daytime+weather -> name+daytime -> name`
-  - Search is case-insensitive and substring-based
-  - Sets background via ST background API on match
-  - Uses first result if multiple matches
-  - Skips background change if no match (logs warning)
-  - Unit tests for all search fallback scenarios
-  - Test coverage ≥ 80% on new code
-- Evidence: Will be added when started
+  - `BackgroundSwitcher.js` implements cascading search: `name+daytime+weather -> name+daytime -> name` ✅
+  - Search is case-insensitive and substring-based ✅
+  - Sets background via ST background API on match ✅
+  - Uses first result if multiple matches ✅
+  - Skips background change if no match (logs warning) ✅
+  - Unit tests for all search fallback scenarios ✅
+  - Test coverage ≥ 80% on new code ✅
+- Evidence:
+  - `BackgroundSwitcher.js`: 100% statements, 80% branches, 100% functions, 100% lines
+  - Full test run: 153/153 passing across 8 suites
+  - Validation command: `node --experimental-vm-modules ./node_modules/jest/bin/jest.js --coverage --runInBand`
+  - Runtime seam: background inventory fetched from `/api/backgrounds/all`; apply step updates ST `background_settings` because `backgrounds.js` does not export its internal `setBackground()` helper
+  - Branch: `feature/t-006-background-switcher`
 - Dependencies: T-003
+- Notes: Implemented with injected `listBackgroundsFn` / `applyBackgroundFn` adapters to keep matching logic testable and resilient to ST internal API drift.
+
+---
+
+## Backlog (Not Started)
 
 ## T-007 - [feature] Scene Tracker UI Panel
 - Owner: AI Assistant
@@ -250,8 +256,8 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
 **Current highest number:** T-012  
 **Next task:** T-013
 
-**Tasks complete:** 6 (T-000, T-001, T-002, T-003, T-004, T-005)  
-**Tasks remaining:** 7 (T-006 through T-012)
+**Tasks complete:** 7 (T-000, T-001, T-002, T-003, T-004, T-005, T-006)  
+**Tasks remaining:** 6 (T-007 through T-012)
 
 ---
 
@@ -264,6 +270,7 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
 | 2026-03-29 | T-004 moved into Completed Tasks; tracker metadata aligned to T-005 as next implementation task | AI Assistant |
 | 2026-03-29 | T-005 completed - prompt builder implementation and evidence recorded | AI Assistant |
 | 2026-03-29 | Added T-012 for deferred silent init extraction of starting pose, emotion, and location | AI Assistant |
+| 2026-03-29 | T-006 completed - background switcher implemented with injected ST runtime adapters and Jest coverage evidence | AI Assistant |
 
 ---
 

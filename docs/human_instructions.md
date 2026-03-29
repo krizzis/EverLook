@@ -1,8 +1,8 @@
 # human_instruction.md
 
-**Version:** 1.1  
-**Last updated:** 2025-10-20  
-**Source of Truth:** Aligns with `methodology.md` v1.1 (SSOT). If anything conflicts, the SSOT wins.
+**Version:** 1.2  
+**Last updated:** 2026-03-29  
+**Source of Truth:** Aligns with `methodology.md` v1.2 (SSOT). If anything conflicts, the SSOT wins.
 
 > **Purpose.** This is your practical, step-by-step runbook as the human operator. It tells you what to run, what to capture, and what to commit—without redefining process. For workflow, gates, and templates, refer to `methodology.md`.
 
@@ -14,6 +14,7 @@
    git fetch origin && git switch main && git pull
    git switch -c feature/<slug>
    ```
+   Exception: skip creating a separate branch for status-only sessions or documents-only sessions unless you specifically want branch isolation.
 2. **Read** `handoff.md` first (canonical schema), then skim `scope.md`, `design.md`, `tracker.md`, `todo.md`.  
 3. **Status sweep** (build/test/lint/scan) to verify you can run the project locally.  
 4. **Start session with the prompt** in `methodology_prompt.md`.  
@@ -30,7 +31,7 @@
 - You **keep secrets safe** (.env, tokens) and **never** commit them.
 - You **enforce gates** by referencing `methodology.md`:
   - DoD (§6), Testing (§7), Security (§8), CI (§9), Branching/PR (§10).
-- You **ensure continuity** by updating `handoff.md` using the SSOT schema (§4).
+- You **ensure continuity** by updating `handoff.md` using the SSOT schema (§4) and refreshing `todo.md` when the near-term plan changes.
 
 ---
 
@@ -56,7 +57,7 @@
 ---
 
 ## 3) Start-of-session checklist (repeat every session)
-1. **Sync** and **branch** (see TL;DR).  
+1. **Sync** and **branch** (see TL;DR). Skip the separate branch only for status-only or documents-only sessions per SSOT §10.  
 2. **Read docs in SSOT order:** `handoff.md` → `scope.md` → `design.md` → `tracker.md` → `todo.md`.  
 3. **Status sweep** (examples below).  
 4. **Launch the session** by pasting the Universal Prompt from `methodology_prompt.md`.  
@@ -99,6 +100,7 @@ pre-commit run --all-files || true
 ## 6) Tracker & Handoff updates (continuity)
 - The AI will **draft updates**; you **commit** them. If absent, ask the AI for the exact diffs to paste.
 - Follow SSOT **Handoff Schema** (§4) strictly (no custom headings).
+- Before closing the session, review `todo.md` and update it if priorities, next steps, or the next task slice changed.
 - In `tracker.md`, ensure each active task has:
   - **Status glyph** + **% complete**, **dates**, and **measurable acceptance criteria** (§5).
   - **Evidence links** (test runs, PRs, logs) when available.
@@ -164,6 +166,7 @@ If CI fails on PR:
 - [ ] All commands run; outputs pasted to AI.  
 - [ ] **`tracker.md` updated** (status/%/dates/evidence).  
 - [ ] **`handoff.md` updated** using the canonical schema (Context, Active Tasks, Decisions, Changes, Validation, Risks, Next Steps, Status).  
+- [ ] **`todo.md` reviewed and updated if needed** for the next session plan.  
 - [ ] Branch pushed; PR updated (or created) and CI green (or failing logs captured).  
 - [ ] **Closing Report** posted in the session and copied into the PR if appropriate.
 

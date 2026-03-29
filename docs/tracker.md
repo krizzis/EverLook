@@ -1,6 +1,6 @@
 # tracker.md
 
-**Version:** 1.1  
+**Version:** 1.2  
 **Last updated:** 2026-03-29  
 **Status:** Active task tracking — single source of truth for work items
 
@@ -100,8 +100,6 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
 
 ---
 
-## Backlog (Not Started)
-
 ## T-004 — [feature] Turn-Pair Analyzer (Tech-LLM Integration)
 - Owner: AI Assistant
 - Status: ✅ 100% | Dates: started 2026-03-29, completed 2026-03-29
@@ -120,6 +118,10 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
   - Coverage: 94.64% Statements, `TurnPairAnalyzer.js` & `prompts.js`
   - Branch: `feat/T-004-turn-pair-analyzer`
 - Dependencies: T-003
+
+---
+
+## Backlog (Not Started)
 
 ## T-005 — [feature] Prompt Builder (Danbooru Tag Generation)
 - Owner: AI Assistant
@@ -229,7 +231,7 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
 ## Task Numbering
 
 **Current highest number:** T-011  
-**Next task:** T-012
+**Next implementation task:** T-005
 
 **Tasks complete:** 5 (T-000, T-001, T-002, T-003, T-004)  
 **Tasks remaining:** 7 (T-005 through T-011)
@@ -242,6 +244,7 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
 |------|---------|--------|
 | 2026-03-29 | Initial tracker created with T-000 through T-011 | AI Assistant |
 | 2026-03-29 | T-001 completed — moved to Completed section with evidence | AI Assistant |
+| 2026-03-29 | T-004 moved into Completed Tasks; tracker metadata aligned to T-005 as next implementation task | AI Assistant |
 
 ---
 

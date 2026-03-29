@@ -1,170 +1,139 @@
 # todo.md
 
 **Session Date:** 2026-03-29  
-**Time Budget:** 3 hours  
-**Session Goal:** Scaffold EverLook extension and implement core scene state data model
+**Time Budget:** 2-3 hours  
+**Session Goal:** Implement T-005 Prompt Builder and leave the project ready for T-006
 
 ---
 
 ## Active Tasks for This Session
 
-### T-001 — Project Scaffolding & Extension Bootstrap
+### T-005 - Prompt Builder (Danbooru Tag Generation)
 
 **Acceptance criteria:**
-- Extension directory structure matches design.md §3.1
-- `manifest.json` is valid with correct metadata (slug: `everlook`, display name: `EverLook`)
-- `index.js` entrypoint loads cleanly in SillyTavern with no console errors
-- `settings.html` renders a basic settings panel in ST extension settings
-- `style.css` is referenced in manifest and loads
-- Extension appears in SillyTavern's extension list
+- `src/prompt/PromptBuilder.js` converts scene state to a Danbooru-style tag string
+- Tag order matches design.md Section 3.4: subject -> appearance -> pose -> outfit -> emotion -> action -> background -> lora
+- `action.interaction` correctly controls subject and action tags
+- Empty or null outfit normalizes to `completely nude`
+- Null or empty attributes are omitted from output
+- Output is deterministic for identical input
+- Output has no trailing commas or double commas
+- `tests/PromptBuilder.test.js` covers ordering, null handling, interaction handling, and determinism
+- Changed-lines test coverage >= 80%
 
 **Session-specific notes:**
-- Use `sillytavern-extension-builder` skill for scaffold generation
-- Minimum SillyTavern version TBD — check current stable
-- Template mode: `default` (UI/event-focused)
+- `src/prompt/PromptBuilder.js` currently exists only as a placeholder scaffold
+- Keep the module pure: no DOM access, no state reads, no side effects
+- Reuse `SceneState` shape exactly as defined in `docs/design.md` Section 3.3
 
 **Expected progress this session:**
-- Complete scaffolding (all files created and valid)
+- Complete implementation and unit tests
+- Record evidence in `docs/tracker.md`
 
 ---
 
-### T-002 — Scene State Data Model & Constants
+### T-006 - Background Switcher (follow only if T-005 finishes early)
 
 **Acceptance criteria:**
-- `SceneState.js` implements the data model from design.md §3.3
-- All attributes have proper types and validation
-- `constants.js` defines predefined lists for pose, emotion, action, daytime, weather
-- Normalization function validates values against predefined lists
-- Unit tests cover: valid state creation, invalid value rejection, null/empty handling
-- Test coverage ≥ 80% on new code
+- `src/background/BackgroundSwitcher.js` implements cascading search: name+daytime+weather -> name+daytime -> name
+- Search is case-insensitive and substring-based
+- First matching background is selected
+- Missing matches log a warning and do not throw
+- Unit tests cover primary and fallback search paths
+- Changed-lines test coverage >= 80%
 
 **Session-specific notes:**
-- Outfit attribute structure may change (per business requirements) — keep it simple and adaptable
-- Empty/null outfit must normalize to "completely nude" in prompt context
-- Pose, emotion, action are single string values normalized to list
+- This task is blocked on nothing structural, but it is lower priority than completing T-005 cleanly
+- Keep any SillyTavern background API dependency injectable or mockable for tests
 
 **Expected progress this session:**
-- Complete data model implementation
-- Complete constants definitions
-- Unit tests written and passing
-
----
-
-### T-003 — State Manager: Init + Save/Restore
-
-**Acceptance criteria:**
-- `StateManager.js` initializes scene state from character card data
-- State saves to `extension_settings['EverLook'].chatStates[chatId]`
-- State restores correctly on chat switch
-- New chat creates fresh state (different chatId)
-- `saveSettingsDebounced()` called after state saves
-- Unit tests for init, save, restore, chat switch scenarios
-
-**Session-specific notes:**
-- Depends on T-002 (SceneState model)
-- Need to understand ST character card data structure for appearance extraction
-- Multi-chat persistence pattern per design.md §3.7
-
-**Expected progress this session:**
-- May only partially complete if T-001/T-002 take longer than expected
-- Core init + save/restore logic; chat switch handler may carry over
+- Only start if T-005 is fully validated and documented
 
 ---
 
 ## Session Priorities
 
 **Must complete (P0):**
-- T-001: Project Scaffolding — Foundation for everything else
+- T-005 - Prompt Builder
 
 **Should complete (P1):**
-- T-002: Scene State Data Model — Core data structure needed by all modules
+- Update tracker and handoff with T-005 evidence after validation
 
-**Could complete if time (P2):**
-- T-003: State Manager Init — Starts bringing the model to life
+**Could complete if time permits (P2):**
+- Start T-006 background search logic and tests
 
 ---
 
 ## Context for This Session
 
 **What happened last session:**
-- Project kickoff — no prior sessions
-- Business requirements documented in `docs/bussiness_requirements.md`
-- `scope.md` and `design.md` created from requirements
-- No code exists yet
+- T-004 finished successfully with analyzer prompt construction, provider injection, response parsing, and confidence-threshold filtering
+- Repository structure already includes placeholders for prompt, background, and UI modules
+- Tests and coverage tooling are already configured through Jest
 
 **Current blockers/dependencies:**
-- Need to verify SillyTavern extension API compatibility for event hooks
-- Need to confirm character card data structure for appearance extraction
-- Tech-LLM prompt design not needed yet (T-002/T-003 are state-only)
+- No blocker for T-005
+- T-006 runtime integration will still need SillyTavern background API confirmation later
+- T-009 still carries a known unknown around the exact ST provider binding in `index.js`
 
 **Environment notes:**
-- SillyTavern should be available locally for manual testing
-- Jest or Vitest needed for unit tests (install as dev dependency)
+- Project branch should be a fresh `feature/<slug>` branch before implementation
+- Use the existing Jest setup; no new test framework is needed
 
 ---
 
 ## Success Criteria for This Session
 
 By end of session, we should have:
-- [ ] Extension scaffold created and loadable in SillyTavern
-- [ ] Scene state data model implemented with validation
-- [ ] Constants file with all predefined value lists
-- [ ] Unit tests for data model (≥ 80% coverage on new code)
-- [ ] State Manager initialized (if time permits)
-- [ ] tracker.md created with T-001, T-002, T-003
-- [ ] handoff.md updated with session results
+- [ ] `src/prompt/PromptBuilder.js` implemented
+- [ ] `tests/PromptBuilder.test.js` implemented and passing
+- [ ] Test output recorded with coverage >= 80%
+- [ ] `docs/tracker.md` updated with T-005 status and evidence
+- [ ] `docs/handoff.md` updated with the next active task
 
-If we don't complete everything:
-- Minimum viable progress: T-001 (scaffold) + T-002 (data model) complete
-- T-003 (State Manager) can safely carry over to next session
+If we do not complete everything:
+- Minimum viable progress: prompt builder implementation plus failing or partial tests documented clearly
+- Do not begin T-006 unless T-005 is complete and evidence is captured
 
 ---
 
 ## Time Boxing
 
 **Estimated breakdown:**
-- T-001 (Scaffolding): 45 minutes
-- T-002 (Data Model + Constants): 60 minutes
-- T-002 (Unit Tests): 30 minutes
-- T-003 (State Manager): 45 minutes
-- Buffer for unexpected issues: 20 minutes
-- Total: ~3 hours
+- T-005 implementation: 60 minutes
+- T-005 unit tests: 45 minutes
+- Validation and tracker/handoff updates: 20 minutes
+- Optional T-006 start: 30-45 minutes
 
 ---
 
 ## Notes & Reminders
 
 **Before starting:**
-- [ ] Read handoff.md if it exists (first session — none yet)
-- [ ] Read sillytavern-extension-builder SKILL.md for scaffold workflow
-- [ ] Review design.md §3.1 for directory structure
-- [ ] Ensure SillyTavern is running for manual verification
+- [ ] Re-read `docs/design.md` Section 3.4 for prompt ordering rules
+- [ ] Confirm `SceneState` field names in `src/state/SceneState.js`
+- [ ] Create a task branch if not already on one
 
 **During session:**
-- [ ] Run validation commands after each change
-- [ ] Paste full outputs to AI (not summaries)
-- [ ] Log decisions in design.md ADR section if new ones arise
-- [ ] Follow conventional commits
+- [ ] Keep prompt generation deterministic
+- [ ] Avoid introducing business logic into `index.js`
+- [ ] Add tests alongside implementation, not afterward
 
 **After session:**
-- [ ] Generate Closing Report
-- [ ] Create/update handoff.md using canonical schema
-- [ ] Create tracker.md with initial tasks and statuses
-- [ ] Commit and push changes
+- [ ] Capture exact validation command and full output
+- [ ] Update `docs/tracker.md` with evidence and status
+- [ ] Refresh `docs/handoff.md` using the canonical schema in `docs/methodology.md` Section 4
 
 ---
 
-## Upcoming Tasks (not for this session)
+## Upcoming Tasks
 
-These tasks will be added to tracker.md and tackled in future sessions:
-
-- **T-004**: Turn-Pair Analyzer — Tech-LLM prompt design + structured response parsing
-- **T-005**: Prompt Builder — Deterministic Danbooru tag generation
-- **T-006**: Background Switcher — Cascading search + ST background API integration
-- **T-007**: Scene Tracker UI — Panel rendering, edit, reset, slash command toggle
-- **T-008**: Image Generation Hook — Inject EverLook prompt into ST pipeline
-- **T-009**: Integration Testing — End-to-end flow validation
-- **T-010**: Polish & Release Packaging — Final QA, manifest finalization, packaging
+- **T-006**: Background Switcher - Cascading search plus SillyTavern background API integration
+- **T-007**: Scene Tracker UI - Panel rendering, edit, reset, slash command toggle
+- **T-008**: Image Generation Hook - Inject EverLook prompt into the ST image pipeline
+- **T-009**: Context Injection - Inject current scene state into chat context before user message
+- **T-010**: Integration Testing - End-to-end validation for the full scene flow
+- **T-011**: Polish and Release Packaging - README, manifest finalization, runtime QA
 
 ---
 

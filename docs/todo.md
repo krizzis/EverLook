@@ -2,77 +2,76 @@
 
 **Session Date:** 2026-03-29
 **Time Budget:** 2-3 hours
-**Session Goal:** Start the next post-T-007 slice by implementing init-time scene extraction for starting pose, emotion, and location.
+**Session Goal:** Finish live verification and close out the expanded T-012 slice after the init-time extractor and runtime Tech-LLM wiring landed.
 
 ---
 
 ## Active Tasks for Next Session
 
-### T-012 - Init-Time Scene Extraction Follow-Up
+### T-012 - Manual Verification / Closeout
 
 **Acceptance criteria:**
-- Silent Tech-LLM prompt derives starting `pose`, `emotion`, and `location` from scenario plus the character's first message
-- Initialization remains silent and does not inject visible chat messages
-- Extraction runs only when starting fields are still unset/defaulted
-- Failures preserve existing defaults and log a warning instead of blocking chat init
-- Unit tests cover prompt construction, fallback/no-op behavior, and successful state seeding
-- Changed-lines test coverage >= 80%
+- Fresh-chat startup silently seeds `pose`, `emotion`, and `location` from scenario plus the first character message
+- Normal user/character turns silently trigger runtime Tech-LLM analysis and update state through `StateManager`
+- Confirmed location changes trigger auto-background sync when enabled
+- Failures preserve state/defaults and do not inject visible chat messages
+- Live SillyTavern verification confirms the new quiet-generation/runtime path behaves as expected
 
 **Next-session notes:**
-- Reuse the existing injected-provider pattern so runtime binding stays swappable
-- Source text should come from scenario plus the first character message, not the full card description
-- Keep the init pass optional and non-blocking so chat startup remains resilient
+- Code and automated validation are complete on branch `feature/t-012-tech-llm-runtime`
+- Remaining work is live SillyTavern verification for the new `generateQuietPrompt`-backed init/runtime path
+- Focus on fresh chat creation, first-message seeding, follow-up turn updates, and auto-background behavior
 
 **Expected progress next session:**
-- Add the init prompt helper and provider seam
-- Seed default pose/emotion/location only when the card/init data has not already set them
-- Add deterministic unit tests for success and failure/no-op paths
+- Validate T-012 end-to-end in SillyTavern and collect exact pass/fail evidence
+- If verification is clean, update `tracker.md` and `handoff.md` to mark T-012 done
+- If edge cases show up, adjust prompt/turn-pair logic and rerun tests
 
 ---
 
-### T-006/T-004 Runtime Integration Follow-Up
+### Next Feature Selection
 
 **Acceptance criteria:**
-- Confirmed location changes from turn-pair analysis trigger background switching automatically
-- Runtime failures leave scene state intact and log a warning instead of breaking chat flow
-- Tests cover the integration seam where practical
+- One next major slice is chosen after T-012 closes: either T-008 image-generation hook or T-009 context injection
+- The selected task has a concrete <=1-day implementation plan before the next coding session starts
 
 **Next-session notes:**
-- This is the next runtime cohesion task after T-012
-- Keep the background runtime adapter injectable and avoid importing private ST internals
+- T-012 absorbed the earlier T-004/T-006 runtime integration follow-up
+- Pick the next task only after the live verification result is known
 
 **Expected progress next session:**
-- Trace the location-change path through `index.js`
-- Decide whether the hook belongs directly after analyzer application or inside a state-change observer
+- Choose between T-008 and T-009 based on which runtime seam feels cleaner after verification
+- Capture the first concrete acceptance test for the chosen task in `tracker.md`
 
 ---
 
 ## Session Priorities
 
 **Must complete (P0):**
-- Start T-012 init-time extraction
+- Manually verify the expanded T-012 runtime/init path in SillyTavern
 
 **Should complete (P1):**
-- Keep the runtime location-change/background trigger work visible and scoped
+- Close T-012 if the live verification passes
 
 **Could complete if time permits (P2):**
-- Begin T-006/T-004 integration after T-012 scaffolding is stable
+- Select and scope the next major feature slice (T-008 or T-009)
 
 ---
 
 ## Context for Next Session
 
 **What changed last session:**
-- T-007 tracker panel is fully complete, including manual SillyTavern verification
-- `StateManager` now supports subscriptions and baseline resets so UI updates reactively without polling
-- Full Jest validation passed with coverage above thresholds, including `src/ui/TrackerPanel.js`
+- Added `InitSceneExtractor` for silent init-time pose/emotion/location seeding from scenario plus the first character message
+- Added shared runtime helpers plus `SceneRuntimeController` to wire pending user turns, Tech-LLM runtime analysis, and auto-background sync
+- Wired SillyTavern's `generateQuietPrompt` into appearance fallback, init extraction, and runtime turn-pair analysis
+- Full Jest validation passed: 197/197 tests, 92.15% statements, 80.79% branches, 96.39% functions, 93.02% lines
 
 **Current blockers/dependencies:**
-- T-012 still depends on confirming the exact scenario/first-message sources and Tech-LLM binding in `index.js`
-- Runtime background triggering still depends on the eventual analyzer-to-state application seam in the entry layer
+- No coding blocker remains for T-012
+- The only meaningful remaining dependency is live SillyTavern verification of the new runtime/init path with the active provider/model setup
 
 **Environment notes:**
-- Current working branch: `feature/t-007-scene-tracker-ui`
+- Current working branch: `feature/t-012-tech-llm-runtime`
 - Validation command: `node --experimental-vm-modules ./node_modules/jest/bin/jest.js --coverage --runInBand`
 
 ---
@@ -80,10 +79,10 @@
 ## Success Criteria for Next Session
 
 By end of the next session, we should have:
-- [ ] T-012 prompt/provider seam implemented
-- [ ] Unit tests for init-time extraction added and passing
-- [ ] `docs/tracker.md` and `docs/handoff.md` updated with T-012 status/evidence
-- [ ] Clear next move for runtime background-trigger integration
+- [ ] Fresh-chat init seeding manually verified in SillyTavern
+- [ ] Runtime turn-pair analysis manually verified in SillyTavern
+- [ ] Background sync on location changes manually verified in SillyTavern
+- [ ] `docs/tracker.md` and `docs/handoff.md` updated to either mark T-012 done or record the exact runtime issue found
 
 ---
 

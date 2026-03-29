@@ -1,6 +1,6 @@
 # tracker.md
 
-**Version:** 1.3
+**Version:** 1.4
 **Last updated:** 2026-03-29
 **Status:** Active task tracking - single source of truth for work items
 
@@ -14,9 +14,9 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
 
 ## Status Glyphs
 
-⚪ **Not started** - Task defined but not yet begun
-🔵 **In progress** - Actively being worked on
-✅ **Done** - Completed and meets acceptance criteria
+⚪ **Not started** - Task defined but not yet begun  
+🔵 **In progress** - Actively being worked on  
+✅ **Done** - Completed and meets acceptance criteria  
 ⚠️ **Blocked** - Cannot proceed, needs intervention
 
 ---
@@ -49,7 +49,7 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
   - `index.js` entrypoint with proper ST imports, settings lifecycle, event hooks ✅
   - `settings.html` renders EverLook settings panel ✅
   - `style.css` referenced in manifest with ST theme-compatible styles ✅
-  - Extension appears in SillyTavern's extension list (manual verification pending at time of implementation) ✅
+  - Extension appears in SillyTavern's extension list ✅
 - Evidence:
   - 17 files created across root, `src/`, and `tests/`
   - Settings template and root entrypoint wired successfully
@@ -235,28 +235,36 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
 
 ## T-012 - [tech-debt] Init-Time Scene Extraction for Starting Pose/Emotion/Location
 - Owner: AI Assistant
-- Status: ⚪ 0% | Dates: planned start TBD
+- Status: 🔵 90% | Dates: started 2026-03-29, updated 2026-03-29
 - Scope: `scope.md` § In Scope (scene state initialization from character card + scenario/first message)
 - Design: `design.md` §3.3 (Character Card Metadata Convention), `design.md` §3.6 (Turn-Pair Analysis Flow)
 - Acceptance criteria:
   - Silent Tech-LLM init pass derives starting `pose`, `emotion`, and `location` from scenario plus the character's first message
+  - Silent Tech-LLM runtime wiring captures user/character turn pairs from ST events and applies accepted changes through `StateManager`
+  - Confirmed location changes from init/runtime analysis trigger the background switcher automatically when auto-background is enabled
   - Initialization remains silent and does not emit visible chat content
   - Extraction runs only when those fields are still unset/defaulted after normal card-based init
-  - Failures preserve safe defaults and log a warning instead of blocking chat initialization
-  - Unit tests cover prompt construction, successful seeding, and failure/no-op behavior
+  - Failures preserve safe defaults or the existing scene state and log without blocking chat initialization or chat flow
+  - Unit tests cover prompt construction, successful seeding, failure/no-op behavior, turn-pair capture, runtime updates, and background sync paths
   - Test coverage ≥ 80% on new code
-- Evidence: Will be added when started
+- Evidence:
+  - Added `InitSceneExtractor.js` for silent init-time pose/emotion/location seeding
+  - Added shared runtime helpers and `SceneRuntimeController.js` to wire pending user-turn capture, Tech-LLM runtime analysis, state updates, and auto-background sync
+  - `index.js` now uses SillyTavern's exported `generateQuietPrompt` for appearance fallback, init extraction, and runtime turn-pair analysis
+  - Full test run: 197/197 passing across 12 suites
+  - Coverage: 92.15% statements, 80.79% branches, 96.39% functions, 93.02% lines
+  - Validation command: `node --experimental-vm-modules ./node_modules/jest/bin/jest.js --coverage --runInBand`
 - Dependencies: T-003, T-004
-- Notes: This is the deferred follow-up after marker-based card initialization and should reuse the injected provider pattern already used for appearance extraction.
+- Notes: Scope expanded during the 2026-03-29 session to absorb the previously informal T-004/T-006 runtime wiring follow-up so init extraction and live runtime analysis ship as one cohesive slice. Remaining work is live SillyTavern verification of the new quiet-generation/runtime path.
 
 ---
 
 ## Task Numbering
 
-**Current highest number:** T-012
+**Current highest number:** T-012  
 **Next task:** T-013
 
-**Tasks complete:** 8 (T-000 through T-007)
+**Tasks complete:** 8 (T-000 through T-007)  
 **Tasks remaining:** 5 (T-008 through T-012)
 
 ---
@@ -273,6 +281,7 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
 | 2026-03-29 | T-006 completed - background switcher implemented with injected ST runtime adapters and Jest coverage evidence | AI Assistant |
 | 2026-03-29 | T-007 advanced to in-progress with implemented tracker panel, reactive state seam, slash command toggle, and full Jest evidence | AI Assistant |
 | 2026-03-29 | T-007 completed after manual SillyTavern verification confirmed tracker panel usability | AI Assistant |
+| 2026-03-29 | T-012 advanced to in-progress after adding silent init extraction, live runtime Tech-LLM wiring, background sync integration, and full Jest coverage evidence | AI Assistant |
 
 ---
 

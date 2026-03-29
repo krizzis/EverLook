@@ -35,6 +35,8 @@ describe('StateManager', () => {
                 description: '[APPEARANCE]\nlong blonde hair, blue eyes\n\n[LORA]\n<lora:alice:1>\n\n[OUTFIT]\nschool uniform, skirt',
             },
         };
+        mockContext.chatMetadata = {};
+        mockContext.chat = [];
         
         // Inject fake ST environment variables
         stateManager.setup(global.extension_settings, () => mockContext);
@@ -202,6 +204,46 @@ describe('StateManager', () => {
         expect(state.appearance.description).toBe('silver hair, green eyes');
         expect(state.characterLora).toBeNull();
         expect(state.outfit).toEqual([]);
+    });
+
+    it('seeds initial pose, emotion, and location from scenario plus first message', async () => {
+        const initSceneProviderFn = jest.fn().mockResolvedValue(
+            '{"pose":"standing","emotion":"serious","location":{"name":"courtyard","daytime":"night","weather":"rainy"}}',
+        );
+        mockContext.chatMetadata = { scenario: 'A rainy castle courtyard at night.' };
+        mockContext.chat = [
+            { is_user: false, is_system: false, mes: '*Alice stands alone in the courtyard, watching the rain.*' },
+        ];
+
+        stateManager.setup(global.extension_settings, () => mockContext, { initSceneProviderFn });
+        await stateManager.initChat('test-chat-seeded', 10);
+        const state = stateManager.getState();
+
+        expect(initSceneProviderFn).toHaveBeenCalledTimes(1);
+        expect(state.pose).toBe('standing');
+        expect(state.emotion).toBe('serious');
+        expect(state.location).toEqual({
+            name: 'courtyard',
+            daytime: 'night',
+            weather: 'rainy',
+        });
+    });
+
+    it('preserves safe defaults when init scene extraction fails', async () => {
+        const initSceneProviderFn = jest.fn().mockRejectedValue(new Error('offline'));
+
+        mockContext.chatMetadata = { scenario: 'A windy cliff at sunset.' };
+        mockContext.chat = [
+            { is_user: false, is_system: false, mes: '*Alice looks over the cliff.*' },
+        ];
+
+        stateManager.setup(global.extension_settings, () => mockContext, { initSceneProviderFn });
+        await stateManager.initChat('test-chat-safe-defaults', 10);
+        const state = stateManager.getState();
+
+        expect(state.pose).toBeNull();
+        expect(state.emotion).toBeNull();
+        expect(state.location).toEqual({ name: null, daytime: 'day', weather: 'clear' });
     });
 
     it('skips lora when [LORA] marker is missing', async () => {

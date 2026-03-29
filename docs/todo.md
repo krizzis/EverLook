@@ -1,33 +1,12 @@
 # todo.md
 
 **Session Date:** 2026-03-29
-**Time Budget:** 1-2 hours
-**Session Goal:** Finish T-007 by manually verifying the new tracker panel in SillyTavern, then roll into the next runtime-integrated slice.
+**Time Budget:** 2-3 hours
+**Session Goal:** Start the next post-T-007 slice by implementing init-time scene extraction for starting pose, emotion, and location.
 
 ---
 
 ## Active Tasks for Next Session
-
-### T-007 - Scene Tracker UI Panel
-
-**Acceptance criteria:**
-- `TrackerPanel.js` renders current scene state in human-readable form
-- User can edit mutable attributes and reset scene state
-- Panel toggleable via slash command
-- Edits call `StateManager` methods rather than mutating state directly
-- UI updates reactively when state changes
-- Manual testing in SillyTavern confirms usability
-
-**Next-session notes:**
-- Code and Jest coverage are already in place; remaining work is runtime verification
-- Verify `renderExtensionTemplateAsync(..., 'src/ui/tracker')` resolves correctly in the live ST host
-- Confirm the current chat is initialized on startup without requiring a manual chat switch
-
-**Expected progress next session:**
-- Complete manual verification and, if clean, mark T-007 done in `docs/tracker.md`
-- Capture any runtime-only bugs or polish items discovered in ST
-
----
 
 ### T-012 - Init-Time Scene Extraction Follow-Up
 
@@ -40,38 +19,57 @@
 - Changed-lines test coverage >= 80%
 
 **Next-session notes:**
-- This is still the cleanest follow-up after T-007 verification
 - Reuse the existing injected-provider pattern so runtime binding stays swappable
 - Source text should come from scenario plus the first character message, not the full card description
+- Keep the init pass optional and non-blocking so chat startup remains resilient
 
 **Expected progress next session:**
-- Begin prompt and provider wiring once T-007 manual verification is no longer blocking the UI slice
+- Add the init prompt helper and provider seam
+- Seed default pose/emotion/location only when the card/init data has not already set them
+- Add deterministic unit tests for success and failure/no-op paths
+
+---
+
+### T-006/T-004 Runtime Integration Follow-Up
+
+**Acceptance criteria:**
+- Confirmed location changes from turn-pair analysis trigger background switching automatically
+- Runtime failures leave scene state intact and log a warning instead of breaking chat flow
+- Tests cover the integration seam where practical
+
+**Next-session notes:**
+- This is the next runtime cohesion task after T-012
+- Keep the background runtime adapter injectable and avoid importing private ST internals
+
+**Expected progress next session:**
+- Trace the location-change path through `index.js`
+- Decide whether the hook belongs directly after analyzer application or inside a state-change observer
 
 ---
 
 ## Session Priorities
 
 **Must complete (P0):**
-- Manually verify T-007 in the local SillyTavern runtime
+- Start T-012 init-time extraction
 
 **Should complete (P1):**
-- If verification passes, mark T-007 complete in `docs/tracker.md` and `docs/handoff.md`
+- Keep the runtime location-change/background trigger work visible and scoped
 
 **Could complete if time permits (P2):**
-- Start T-012 init-time pose/emotion/location extraction
+- Begin T-006/T-004 integration after T-012 scaffolding is stable
 
 ---
 
 ## Context for Next Session
 
-**What changed this session:**
-- T-007 tracker panel was implemented in code with edit/reset UI, slash-command toggle, responsive styling, and startup mounting
+**What changed last session:**
+- T-007 tracker panel is fully complete, including manual SillyTavern verification
 - `StateManager` now supports subscriptions and baseline resets so UI updates reactively without polling
-- Full Jest validation passed with coverage above thresholds, including direct coverage for `src/ui/TrackerPanel.js`
+- Full Jest validation passed with coverage above thresholds, including `src/ui/TrackerPanel.js`
 
 **Current blockers/dependencies:**
-- T-007 still depends on manual verification inside SillyTavern before it can be closed honestly
 - T-012 still depends on confirming the exact scenario/first-message sources and Tech-LLM binding in `index.js`
+- Runtime background triggering still depends on the eventual analyzer-to-state application seam in the entry layer
 
 **Environment notes:**
 - Current working branch: `feature/t-007-scene-tracker-ui`
@@ -82,32 +80,20 @@
 ## Success Criteria for Next Session
 
 By end of the next session, we should have:
-- [ ] Manual ST verification for T-007 captured with pass/fail notes
-- [ ] `docs/tracker.md` updated to either `✅` or left `🔵` with a concrete blocker
-- [ ] `docs/handoff.md` refreshed with the runtime evidence
-- [ ] Clear decision on whether T-012 or runtime background-trigger integration is the next active code slice
-
----
-
-## Manual Test Checklist for T-007
-
-- [ ] Reload the extension in SillyTavern and confirm no startup errors
-- [ ] Run `/everlook-tracker` to toggle the panel open
-- [ ] Run `/everlook-tracker hide` and `/everlook-tracker show`
-- [ ] Confirm the current chat state appears without switching chats manually
-- [ ] Edit pose, emotion, action, location, and outfit; save; confirm values persist in the panel
-- [ ] Click `Reset Scene` and confirm the state returns to the loaded chat baseline
-- [ ] Switch chats and confirm the panel updates reactively for the newly active chat
+- [ ] T-012 prompt/provider seam implemented
+- [ ] Unit tests for init-time extraction added and passing
+- [ ] `docs/tracker.md` and `docs/handoff.md` updated with T-012 status/evidence
+- [ ] Clear next move for runtime background-trigger integration
 
 ---
 
 ## Upcoming Tasks
 
-- **T-007**: Scene Tracker UI - Finish manual verification and close the task
 - **T-012**: Init-Time Scene Extraction - Silent Tech-LLM pass for starting pose, emotion, and location
 - **T-008**: Image Generation Hook - Inject EverLook prompt into the ST image pipeline
 - **T-009**: Context Injection - Inject current scene state into chat context before user message
 - **T-010**: Integration Testing - End-to-end validation for the full scene flow
+- **T-011**: Polish & Release Packaging
 
 ---
 

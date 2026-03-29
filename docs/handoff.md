@@ -2,14 +2,14 @@
 
 ## Context Snapshot
 - EverLook is a SillyTavern extension for single-character scene tracking during chat sessions.
-- Seven tasks are complete: T-000 through T-006.
-- Scene state, per-chat persistence, Tech-LLM turn-pair analysis, deterministic prompt generation, marker-based character initialization, and background matching are implemented and covered by Jest.
-- T-007 is now implemented in code: the tracker panel mounts into the SillyTavern UI, subscribes to scene-state changes, routes edits through `StateManager`, and exposes a slash-command toggle.
-- Manual SillyTavern verification is still pending before T-007 can be marked fully complete.
+- Eight tasks are complete: T-000 through T-007.
+- Scene state, per-chat persistence, Tech-LLM turn-pair analysis, deterministic prompt generation, marker-based character initialization, background matching, and the tracker UI panel are implemented and verified.
+- T-007 manual verification is complete: panel mount, slash-command toggle, edit/save, reset, and reactive chat updates all worked in SillyTavern.
+- The next major slice is still the deferred init-time extraction work for starting pose, emotion, and location.
 - Group chats remain explicitly out of scope for MVP.
 
 ## Active Task(s)
-- T-007: Scene Tracker UI Panel — Acceptance: `TrackerPanel.js` renders current scene state in human-readable form, user can edit mutable attributes and reset scene state, panel is toggleable via slash command, edits call `StateManager` methods, UI updates reactively, manual testing confirms usability.
+- T-012: Init-Time Scene Extraction for Starting Pose/Emotion/Location — Acceptance: silent Tech-LLM init pass derives starting `pose`, `emotion`, and `location` from scenario plus the character's first message; extraction remains silent; runs only when fields are still unset/defaulted; failures preserve safe defaults and log a warning; unit tests cover prompt construction, successful seeding, and failure/no-op behavior; coverage ≥ 80% on new code.
 
 ## Decisions Made
 - T-004 kept the analyzer decoupled from the concrete ST generation provider via injected `providerFn`.
@@ -22,28 +22,27 @@
 - `src/ui/tracker.html` (+26/-0): Replaced placeholder markup with a mounted panel shell, status area, and close control.
 - `style.css` (+142/-24): Added tracker panel layout, responsive form styling, and section/field treatment for the side panel.
 - `src/state/StateManager.js` (+76/-9): Added subscriber notifications, baseline reset support, and reactive save/update hooks for the UI layer.
-- `index.js` (+217/-147): Wired tracker panel mount, slash command registration, toast helpers, debug toggle surface, and startup chat initialization.
+- `index.js` (+219/-149 across follow-up fixes): Wired tracker panel mount, slash command registration, toast helpers, debug toggle surface, startup chat initialization, and corrected slash-command import paths.
 - `tests/TrackerPanel.test.js` (new): Added helper, render, setup validation, reset, and submit-path coverage for the UI module.
 - `tests/StateManager.test.js` (+44/-0): Added coverage for subscriptions and reset-to-baseline behavior.
 - `jest.config.js` (+1/-0): Added `src/ui/**/*.js` to coverage collection.
-- `docs/tracker.md` (rewritten): Marked T-007 in progress with evidence and restored readable status text.
+- `docs/tracker.md` and `docs/todo.md`: Advanced T-007 to complete and repointed the next-session plan to T-012.
 
 ## Validation & Evidence
 - Unit: 167/167 passing across 9 suites via `node --experimental-vm-modules ./node_modules/jest/bin/jest.js --coverage --runInBand`
 - Coverage: 93.64% statements, 85.53% branches, 95.55% functions, 94.55% lines
 - UI module coverage: `TrackerPanel.js` 93.45% statements, 86.9% branches, 88.46% functions, 93.39% lines
-- Focused validation: `node --experimental-vm-modules ./node_modules/jest/bin/jest.js tests/StateManager.test.js tests/TrackerPanel.test.js --runInBand`
+- Manual: SillyTavern verification completed for T-007 panel mount, slash command toggle, edit/save, reset, and reactive chat updates
 
 ## Risks & Unknowns
-- T-007 still needs manual SillyTavern confirmation for panel mount, slash command usability, and edit/reset workflow. — owner: Human operator — review: 2026-03-29
 - ST Global Provider Binding still needs tracing when wiring analyzer execution in `index.js` for later runtime tasks. — owner: AI Assistant — review: 2026-03-31
 - Background application currently mirrors exported ST background state because `backgrounds.js` keeps `setBackground()` private; if upstream changes the internal state contract, the adapter in `index.js` may need a refresh. — owner: AI Assistant — review: 2026-03-31
 - Starting pose/emotion/location are still default-seeded; add a silent Tech-LLM init pass that reads scenario plus the character's first message before normal turn analysis. — owner: AI Assistant — review: 2026-03-31
 
 ## Next Steps
-1. Manually verify T-007 in the local SillyTavern instance: open the tracker panel, edit fields, reset to baseline, and exercise `/everlook-tracker show|hide|toggle`.
-2. If manual verification passes, update `docs/tracker.md` and `docs/handoff.md` to mark T-007 complete.
-3. Resume feature work with either T-012 (init-time scene extraction) or the T-006/T-004 runtime integration that triggers background switching on confirmed location changes.
+1. Implement T-012 init-time extraction for starting pose, emotion, and location using the existing injected provider pattern.
+2. Wire T-004 and T-006 together so confirmed location changes trigger the background switcher automatically during runtime.
+3. After that, move to T-008 image-generation hook or T-009 context injection depending on the runtime seam that proves clearer first.
 
 ## Status Summary
 - ✅ 100% - T-000 (Documentation)
@@ -53,5 +52,5 @@
 - ✅ 100% - T-004 (Turn-Pair Analyzer)
 - ✅ 100% - T-005 (Prompt Builder)
 - ✅ 100% - T-006 (Background Switcher)
-- 🔵 90% - T-007 (Scene Tracker UI Panel)
+- ✅ 100% - T-007 (Scene Tracker UI Panel)
 - ⚪ 0% - T-008 through T-012

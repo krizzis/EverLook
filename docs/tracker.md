@@ -153,32 +153,32 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
 - Dependencies: T-003
 - Notes: Implemented with injected `listBackgroundsFn` / `applyBackgroundFn` adapters to keep matching logic testable and resilient to ST API drift.
 
----
-
-## Active / Backlog
-
 ## T-007 - [feature] Scene Tracker UI Panel
 - Owner: AI Assistant
-- Status: 🔵 90% | Dates: started 2026-03-29
+- Status: ✅ 100% | Dates: started 2026-03-29, completed 2026-03-29
 - Scope: `scope.md` § In Scope (scene tracker UI)
 - Design: `design.md` §3.2 (UI Layer)
 - Acceptance criteria:
-  - `TrackerPanel.js` renders current scene state in human-readable form
-  - User can edit mutable attributes (all except `characterName` and `characterLora`)
-  - User can reset scene state
-  - Panel toggleable via slash command
-  - Edits call `StateManager` methods (no direct state mutation)
-  - UI updates reactively when state changes
-  - Manual testing in SillyTavern confirms usability
+  - `TrackerPanel.js` renders current scene state in human-readable form ✅
+  - User can edit mutable attributes (all except `characterName` and `characterLora`) ✅
+  - User can reset scene state ✅
+  - Panel toggleable via slash command ✅
+  - Edits call `StateManager` methods (no direct state mutation) ✅
+  - UI updates reactively when state changes ✅
+  - Manual testing in SillyTavern confirms usability ✅
 - Evidence:
   - `TrackerPanel.js` implemented with mounted side panel, reactive state subscriptions, edit/reset handlers, and slash-command toggle wiring
-  - `StateManager.js` now exposes subscription and baseline reset seams so the UI reacts without polling
+  - `StateManager.js` exposes subscription and baseline reset seams so the UI reacts without polling
   - Full test run: 167/167 passing across 9 suites
   - Coverage: 93.64% statements, 85.53% branches, 95.55% functions, 94.55% lines
   - UI module coverage: `TrackerPanel.js` 93.45% statements, 86.9% branches, 88.46% functions, 93.39% lines
   - Validation command: `node --experimental-vm-modules ./node_modules/jest/bin/jest.js --coverage --runInBand`
-  - Remaining acceptance item: manual usability verification inside SillyTavern
+  - Manual verification completed in SillyTavern: panel mount, slash-command toggle, edit/save, reset, and reactive chat updates confirmed
 - Dependencies: T-003
+
+---
+
+## Active / Backlog
 
 ## T-008 - [feature] Image Generation Hook
 - Owner: AI Assistant
@@ -256,8 +256,8 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
 **Current highest number:** T-012
 **Next task:** T-013
 
-**Tasks complete:** 7 (T-000 through T-006)
-**Tasks remaining:** 6 (T-007 through T-012)
+**Tasks complete:** 8 (T-000 through T-007)
+**Tasks remaining:** 5 (T-008 through T-012)
 
 ---
 
@@ -272,6 +272,7 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
 | 2026-03-29 | Added T-012 for deferred silent init extraction of starting pose, emotion, and location | AI Assistant |
 | 2026-03-29 | T-006 completed - background switcher implemented with injected ST runtime adapters and Jest coverage evidence | AI Assistant |
 | 2026-03-29 | T-007 advanced to in-progress with implemented tracker panel, reactive state seam, slash command toggle, and full Jest evidence | AI Assistant |
+| 2026-03-29 | T-007 completed after manual SillyTavern verification confirmed tracker panel usability | AI Assistant |
 
 ---
 

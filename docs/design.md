@@ -93,8 +93,11 @@ Development environment:
 
 **1. Event-Driven Reactivity**
 - What it means: EverLook reacts to SillyTavern events (message sent, message received, chat switched) rather than polling
-- How we apply it: Register event handlers for `MESSAGE_SENT`, `MESSAGE_RECEIVED`, `CHAT_CHANGED` etc.
-- Example: Turn-pair analysis triggers only after character response completes
+- How we apply it: Listens to ST events (`CHAT_CHANGED`, `MESSAGE_RECEIVED`).
+- Calculates dynamic installation folder context explicitly to support variant ST imported repo names (using `import.meta.url` resolution to avoid HTTP 404s).
+- Owns the "Debounced Save" wrapper functions.
+- Manages the settings UI panel (`settings.html`).
+- Bootstraps the pipeline and instantiates decoupled dependency instances using a constructor schema or `.setup(extension_settings, getContext)` to abstract sub-modules from relying on relative imports linking back strictly up standard Webpack architectures.
 
 **2. Single Source of Truth for Scene State**
 - What it means: One canonical state object per chat; all modules read from and write to it through the Scene State Manager

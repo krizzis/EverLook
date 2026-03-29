@@ -12,9 +12,6 @@ export default {
             lines: 80,
         },
     },
-    moduleNameMapper: {
-        '^../../../../extensions.js$': '<rootDir>/tests/__mocks__/extensions.js'
-    },
     // No transform needed — we use native ES modules
     transform: {},
 };

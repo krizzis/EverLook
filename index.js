@@ -25,10 +25,12 @@ const EXTENSION_NAME = 'EverLook';
 
 /**
  * Folder path used by renderExtensionTemplateAsync.
- * Third-party extensions live under scripts/extensions/third-party/<name>/,
- * so the template loader needs the 'third-party/' prefix.
+ * Calculated dynamically so that cloning via ST's git importer (which names the folder
+ * after the github repo) does not break template rendering.
  */
-const EXTENSION_FOLDER_PATH = 'third-party/EverLook';
+const _url = new URL(import.meta.url);
+const _folderName = _url.pathname.split('/').at(-2);
+const EXTENSION_FOLDER_PATH = `third-party/${_folderName}`;
 
 /**
  * Default settings applied on first load or when keys are missing.
@@ -201,10 +203,13 @@ jQuery(async () => {
         // 1. Initialize settings (merge defaults for missing keys)
         initSettings();
 
-        // 2. Render settings UI
+        // 2. Inject ST global handlers into the StateManager
+        stateManager.setup(extension_settings, getContext);
+
+        // 3. Render settings UI
         await renderSettings();
 
-        // 3. Register event handlers
+        // 4. Register event handlers
         eventSource.on(event_types.APP_READY, onAppReady);
         eventSource.on(event_types.CHAT_CHANGED, onChatChanged);
         eventSource.on(event_types.MESSAGE_RECEIVED, onMessageReceived);

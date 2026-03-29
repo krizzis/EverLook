@@ -1,5 +1,4 @@
 import { SceneState } from './SceneState.js';
-import { getContext, extension_settings } from '../../../../extensions.js';
 
 /**
  * StateManager manages the Singleton instance of the active SceneState.
@@ -14,6 +13,24 @@ class StateManager {
 
     /** @type {string|null} */
     #chatId = null;
+
+    /** @type {Object|null} */
+    #extensionSettings = null;
+
+    /** @type {Function|null} */
+    #getContext = null;
+
+    /**
+     * Injects SillyTavern dependencies so we avoid fragile relative file paths
+     * pointing back to the ST root directory.
+     * 
+     * @param {Object} extensionSettings Global ST extension settings
+     * @param {Function} getContext ST context resolver
+     */
+    setup(extensionSettings, getContextFn) {
+        this.#extensionSettings = extensionSettings;
+        this.#getContext = getContextFn;
+    }
 
     /**
      * @returns {SceneState|null} The canonical, immutable scene state for the active chat.
@@ -41,14 +58,14 @@ class StateManager {
         this.#chatId = chatId;
         
         // Ensure the chatStates dictionary exists
-        if (!extension_settings.EverLook) {
-            extension_settings.EverLook = { chatStates: {} };
+        if (this.#extensionSettings && !this.#extensionSettings.EverLook) {
+            this.#extensionSettings.EverLook = { chatStates: {} };
         }
-        if (!extension_settings.EverLook.chatStates) {
-            extension_settings.EverLook.chatStates = {};
+        if (this.#extensionSettings && !this.#extensionSettings.EverLook.chatStates) {
+            this.#extensionSettings.EverLook.chatStates = {};
         }
 
-        const savedData = extension_settings.EverLook.chatStates[chatId];
+        const savedData = this.#extensionSettings ? this.#extensionSettings.EverLook.chatStates[chatId] : null;
 
         if (savedData) {
             try {
@@ -73,7 +90,7 @@ class StateManager {
         let lora = null;
         
         try {
-            const context = getContext();
+            const context = typeof this.#getContext === 'function' ? this.#getContext() : null;
             if (context && context.characters && context.characters[characterId]) {
                 const charData = context.characters[characterId];
                 name = charData.name || charData.data?.name || name;
@@ -123,8 +140,10 @@ class StateManager {
         if (!this.#chatId || !this.#currentState) return;
 
         try {
-            extension_settings.EverLook.chatStates[this.#chatId] = this.#currentState.toJSON();
-            const context = getContext();
+            if (this.#extensionSettings && this.#extensionSettings.EverLook) {
+                this.#extensionSettings.EverLook.chatStates[this.#chatId] = this.#currentState.toJSON();
+            }
+            const context = typeof this.#getContext === 'function' ? this.#getContext() : null;
             if (context && typeof context.saveSettingsDebounced === 'function') {
                 context.saveSettingsDebounced();
             }

@@ -20,11 +20,8 @@ const mockContext = {
     saveSettingsDebounced: jest.fn()
 };
 
-// Mock the ST extensions.js module (virtual true since path doesn't exist locally)
-jest.unstable_mockModule('../../../../extensions.js', () => ({
-    extension_settings: global.extension_settings,
-    getContext: jest.fn(() => mockContext)
-}), { virtual: true });
+// We no longer rely on module importing for global ST objects.
+// D.I. handles it now natively.
 
 const { stateManager } = await import('../src/state/StateManager.js');
 const { SceneState } = await import('../src/state/SceneState.js');
@@ -33,6 +30,10 @@ describe('StateManager', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         global.extension_settings.EverLook.chatStates = {};
+        
+        // Inject fake ST environment variables
+        stateManager.setup(global.extension_settings, () => mockContext);
+        
         // Reset state
         stateManager.initChat(null, null); // Forces reset
     });

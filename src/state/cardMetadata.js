@@ -10,6 +10,7 @@
  */
 
 const MARKERS = Object.freeze(['APPEARANCE', 'LORA']);
+const MARKER_LINE_PATTERN = /^\s*\[(APPEARANCE|LORA)\](.*)$/i;
 
 function normalizeSectionBody(value) {
     if (typeof value !== 'string') {
@@ -26,36 +27,6 @@ function normalizeSectionBody(value) {
     return normalized || null;
 }
 
-function trimSectionAtParagraphBreak(value) {
-    if (typeof value !== 'string') {
-        return '';
-    }
-
-    const trimmed = value.trim();
-    if (!trimmed) {
-        return '';
-    }
-
-    const firstParagraph = trimmed.split(/\r?\n\s*\r?\n/, 1)[0];
-    return firstParagraph.trim();
-}
-
-function findMarkers(description) {
-    const markerPattern = /^\s*\[(APPEARANCE|LORA)\]\s*$/gim;
-    const matches = [];
-    let match;
-
-    while ((match = markerPattern.exec(description)) !== null) {
-        matches.push({
-            key: match[1].toUpperCase(),
-            start: match.index,
-            contentStart: markerPattern.lastIndex,
-        });
-    }
-
-    return matches;
-}
-
 export function parseCharacterDescription(description) {
     if (typeof description !== 'string' || description.trim().length === 0) {
         return {
@@ -67,18 +38,43 @@ export function parseCharacterDescription(description) {
         };
     }
 
-    const matches = findMarkers(description);
     const sections = new Map();
+    const lines = description.split(/\r?\n/);
 
-    for (let i = 0; i < matches.length; i++) {
-        const current = matches[i];
-        const next = matches[i + 1];
-        const body = description.slice(current.contentStart, next ? next.start : description.length);
-        const boundedBody = next ? body : trimSectionAtParagraphBreak(body);
-
-        if (MARKERS.includes(current.key) && !sections.has(current.key)) {
-            sections.set(current.key, normalizeSectionBody(boundedBody));
+    for (let i = 0; i < lines.length; i++) {
+        const match = lines[i].match(MARKER_LINE_PATTERN);
+        if (!match) {
+            continue;
         }
+
+        const key = match[1].toUpperCase();
+        if (!MARKERS.includes(key) || sections.has(key)) {
+            continue;
+        }
+
+        const collectedLines = [];
+        const inlineContent = match[2]?.trim();
+        if (inlineContent) {
+            collectedLines.push(inlineContent);
+        }
+
+        let j = i + 1;
+        while (j < lines.length) {
+            if (MARKER_LINE_PATTERN.test(lines[j])) {
+                break;
+            }
+
+            const currentLine = lines[j].trim();
+            if (!currentLine) {
+                break;
+            }
+
+            collectedLines.push(currentLine);
+            j++;
+        }
+
+        sections.set(key, normalizeSectionBody(collectedLines.join('\n')));
+        i = j - 1;
     }
 
     return {

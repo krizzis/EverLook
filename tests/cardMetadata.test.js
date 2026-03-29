@@ -29,6 +29,17 @@ silver hair
         expect(parsed.lora).toBe('<lora:test:0.8>');
     });
 
+    test('supports inline marker content on the same line', () => {
+        const parsed = parseCharacterDescription(`
+[APPEARANCE] adult, wavy long black hair, brown eyes, small breasts
+
+[LORA] <lora:carmen_pd_v1:1>
+`);
+
+        expect(parsed.appearance).toBe('adult, wavy long black hair, brown eyes, small breasts');
+        expect(parsed.lora).toBe('<lora:carmen_pd_v1:1>');
+    });
+
     test('returns nulls when markers are absent', () => {
         const parsed = parseCharacterDescription('Plain roleplay description only.');
 

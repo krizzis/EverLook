@@ -59,6 +59,16 @@ describe('StateManager', () => {
         expect(mockContext.saveSettingsDebounced).toHaveBeenCalledTimes(1);
     });
 
+    it('creates a fresh state from inline marker syntax', async () => {
+        mockContext.characters[10].description = '[APPEARANCE] adult, wavy long black hair, brown eyes, small breasts\n\n[LORA] <lora:carmen_pd_v1:1>';
+
+        await stateManager.initChat('test-chat-inline', 10);
+        const state = stateManager.getState();
+
+        expect(state.appearance.description).toBe('adult, wavy long black hair, brown eyes, small breasts');
+        expect(state.characterLora).toBe('<lora:carmen_pd_v1:1>');
+    });
+
     it('revives state from saved extension_settings', async () => {
         const dummySavedState = SceneState.createDefault('saved-chat-99', 'Bob').update({ pose: 'sitting' }).toJSON();
         global.extension_settings.EverLook.chatStates['saved-chat-99'] = dummySavedState;

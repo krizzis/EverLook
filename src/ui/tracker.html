@@ -1,9 +1,23 @@
 <!-- EverLook Scene Tracker Panel -->
-<!-- @see design.md §3.2 — UI Layer -->
+<!-- @see design.md Section 3.2 - UI Layer -->
 <!-- @implements T-007 -->
 
-<!-- Placeholder — implementation in T-007 -->
-<div id="everlook_tracker_panel" class="everlook__tracker-panel">
-    <h3>Scene Tracker</h3>
-    <p>Panel content will be added in T-007.</p>
-</div>
+<section id="everlook_tracker_panel" class="everlook__tracker-panel" aria-hidden="true">
+    <div class="everlook__tracker-header">
+        <div>
+            <h3 class="everlook__tracker-title">EverLook Scene Tracker</h3>
+            <p class="everlook__tracker-subtitle">Review and edit the active chat scene state.</p>
+        </div>
+        <button
+            type="button"
+            class="menu_button menu_button_icon everlook__tracker-close"
+            data-everlook-action="close"
+            aria-label="Close scene tracker"
+        >
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <div class="everlook__tracker-status"></div>
+    <div class="everlook__tracker-content"></div>
+</section>

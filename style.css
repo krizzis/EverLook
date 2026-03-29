@@ -1,5 +1,5 @@
 /* =========================================================
- * EverLook — Scene Tracker Extension Styles
+ * EverLook - Scene Tracker Extension Styles
  * ========================================================= */
 
 /* ----- Settings Panel ----- */
@@ -25,24 +25,158 @@
     margin: 0.75rem 0;
 }
 
-/* ----- Tracker Panel (placeholder — will be fleshed out in T-007) ----- */
+/* ----- Tracker Panel ----- */
 .everlook__tracker-panel {
     display: none;
     position: fixed;
     right: 0;
     top: 50%;
     transform: translateY(-50%);
-    width: 300px;
+    width: 340px;
     max-height: 80vh;
     overflow-y: auto;
-    background: var(--SmartThemeBlurTintColor, rgba(0, 0, 0, 0.7));
+    background: var(--SmartThemeBlurTintColor, rgba(0, 0, 0, 0.72));
     border-left: 1px solid var(--SmartThemeBorderColor, #555);
     padding: 1rem;
     z-index: 1000;
     color: var(--SmartThemeBodyColor, #eee);
     font-size: 0.9rem;
+    box-shadow: 0 0 18px rgba(0, 0, 0, 0.35);
 }
 
 .everlook__tracker-panel.active {
     display: block;
+}
+
+.everlook__tracker-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.everlook__tracker-title {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.everlook__tracker-subtitle {
+    margin: 0.25rem 0 0;
+    color: var(--SmartThemeQuoteColor, #b5b5b5);
+    font-size: 0.8rem;
+    line-height: 1.35;
+}
+
+.everlook__tracker-status {
+    margin-bottom: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--SmartThemeBorderColor, #555);
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.04);
+    font-size: 0.8rem;
+}
+
+.everlook__tracker-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.everlook__tracker-empty {
+    padding: 0.75rem;
+    border: 1px dashed var(--SmartThemeBorderColor, #555);
+    border-radius: 0.5rem;
+}
+
+.everlook__tracker-section {
+    border: 1px solid var(--SmartThemeBorderColor, #555);
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.everlook__tracker-section-title {
+    margin: 0 0 0.75rem;
+    font-size: 0.9rem;
+}
+
+.everlook__field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+.everlook__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.everlook__field--full {
+    grid-column: 1 / -1;
+}
+
+.everlook__field--checkbox {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    padding-top: 1.45rem;
+}
+
+.everlook__field-label {
+    font-size: 0.78rem;
+    color: var(--SmartThemeQuoteColor, #b5b5b5);
+}
+
+.everlook__field-help {
+    font-size: 0.72rem;
+    color: var(--SmartThemeQuoteColor, #b5b5b5);
+}
+
+.everlook__readonly-value {
+    min-height: 2.25rem;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--SmartThemeBorderColor, #555);
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    line-height: 1.4;
+}
+
+.everlook__textarea {
+    min-height: 4.5rem;
+    resize: vertical;
+}
+
+.everlook__muted {
+    color: var(--SmartThemeQuoteColor, #b5b5b5);
+}
+
+.everlook__tracker-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.everlook__tracker-actions .menu_button {
+    flex: 1;
+}
+
+@media (max-width: 900px) {
+    .everlook__tracker-panel {
+        width: min(92vw, 360px);
+        top: auto;
+        bottom: 1rem;
+        transform: none;
+        border-left: 1px solid var(--SmartThemeBorderColor, #555);
+        border-top: 1px solid var(--SmartThemeBorderColor, #555);
+        border-radius: 0.75rem 0 0 0.75rem;
+    }
+
+    .everlook__field-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .everlook__field--checkbox {
+        padding-top: 0;
+    }
 }

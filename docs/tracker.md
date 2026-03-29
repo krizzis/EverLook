@@ -1,22 +1,22 @@
 # tracker.md
 
-**Version:** 1.2  
-**Last updated:** 2026-03-29  
+**Version:** 1.3
+**Last updated:** 2026-03-29
 **Status:** Active task tracking - single source of truth for work items
 
 ---
 
 ## Purpose
 
-This document tracks all tasks for EverLook, their acceptance criteria, status, owners, and evidence of completion. It's the primary reference for "what needs to be done" and is updated continuously throughout the project.
+This document tracks all tasks for EverLook, their acceptance criteria, status, owners, and evidence of completion. It is the primary reference for current implementation progress.
 
 ---
 
 ## Status Glyphs
 
-⚪ **Not started** - Task defined but not yet begun  
-🔵 **In progress** - Actively being worked on  
-✅ **Done** - Completed and meets acceptance criteria  
+⚪ **Not started** - Task defined but not yet begun
+🔵 **In progress** - Actively being worked on
+✅ **Done** - Completed and meets acceptance criteria
 ⚠️ **Blocked** - Cannot proceed, needs intervention
 
 ---
@@ -35,9 +35,8 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
   - `tracker.md` created with all known tasks ✅
   - `handoff.md` created with canonical schema ✅
   - All documents are internally consistent and cross-reference correctly ✅
-- Evidence: Files created in `docs/` directory; reviewed for consistency
+- Evidence: Files created in `docs/` and reviewed for consistency
 - Dependencies: `docs/bussiness_requirements.md` (read)
-- Notes: First session - no prior context. Documents derived from business requirements and SillyTavern extension conventions.
 
 ## T-001 - [infra] Project Scaffolding & Extension Bootstrap
 - Owner: AI Assistant
@@ -46,19 +45,16 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
 - Design: `design.md` §3.1 (Directory Structure)
 - Acceptance criteria:
   - Extension directory structure matches `design.md` §3.1 ✅
-  - `manifest.json` is valid with correct metadata (slug: `everlook`, display name: `EverLook`) ✅
+  - `manifest.json` is valid with correct metadata ✅
   - `index.js` entrypoint with proper ST imports, settings lifecycle, event hooks ✅
-  - `settings.html` renders EverLook settings panel (enable, debug, confidence, background) ✅
+  - `settings.html` renders EverLook settings panel ✅
   - `style.css` referenced in manifest with ST theme-compatible styles ✅
-  - Extension appears in SillyTavern's extension list (pending manual verification) ✅
+  - Extension appears in SillyTavern's extension list (manual verification pending at time of implementation) ✅
 - Evidence:
-  - 17 files created across root, `src/`, and `tests/` directories
-  - `manifest.json` validated as correct JSON with expected keys
-  - `index.js`: ES module imports, jQuery startup, 4 event handlers registered
-  - `settings.html`: 3 sections (General, Scene Analysis, Background)
+  - 17 files created across root, `src/`, and `tests/`
+  - Settings template and root entrypoint wired successfully
   - Branch: `feat/T-001-scaffold`
 - Dependencies: None
-- Notes: Used the `sillytavern-extension-builder` skill templates as baseline and customized them for EverLook.
 
 ## T-002 - [feature] Scene State Data Model & Constants
 - Owner: AI Assistant
@@ -73,12 +69,10 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
   - Unit tests cover valid state creation, invalid value rejection, and null/empty handling ✅
   - Test coverage ≥ 80% on new code ✅
 - Evidence:
-  - `constants.js`: 100% statements, 100% branches, 100% functions, 100% lines
+  - `constants.js`: 100% statements, branches, functions, lines
   - `SceneState.js`: 93.81% statements, 89.78% branches, 100% functions, 93.75% lines
-  - Tests: 107 passed, 0 failed (5 suites at completion time)
-  - Branch: `feat/T-002-scene-state`
+  - Tests passed at completion time
 - Dependencies: T-001
-- Notes: Immutable update pattern. Strict validation for daytime/weather; advisory validation for pose/emotion/action. Outfit remains type-checked only because its structure may change.
 
 ## T-003 - [feature] State Manager: Init + Save/Restore
 - Owner: AI Assistant
@@ -93,7 +87,7 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
   - Test coverage ≥ 80% on new code ✅
 - Evidence:
   - `StateManager.js` test suite passed
-  - Overall coverage at completion time: 93.8% statements, 87.1% branches
+  - Overall coverage at completion time exceeded thresholds
 - Dependencies: T-002
 
 ## T-004 - [feature] Turn-Pair Analyzer (Tech-LLM Integration)
@@ -105,13 +99,13 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
   - `TurnPairAnalyzer.js` constructs structured prompts with current turn pair + state context ✅
   - Silent request sent to Tech-LLM via ST connection API ✅
   - Parses structured JSON response (changed attributes + confidence) ✅
-  - Confidence threshold gating works (configurable, skip below threshold) ✅
+  - Confidence threshold gating works ✅
   - All changes/skips logged to console ✅
   - Unit tests with mocked LLM responses ✅
   - Test coverage ≥ 80% on new code ✅
 - Evidence:
-  - Tests: 134/134 passing at completion time
-  - Coverage: analyzer module 94.64% statements; `TurnPairAnalyzer.js` and `prompts.js` covered
+  - Tests passed at completion time
+  - Analyzer coverage exceeded thresholds
   - Branch: `feat/T-004-turn-pair-analyzer`
 - Dependencies: T-003
 
@@ -122,21 +116,20 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
 - Design: `design.md` §3.4 (Prompt Generation Logic), §3.2 (Prompt Layer)
 - Acceptance criteria:
   - `PromptBuilder.js` converts scene state to Danbooru-style tag string ✅
-  - Tag order matches business requirements: subject -> appearance -> pose -> outfit -> emotion -> action -> background -> lora ✅
+  - Tag order matches business requirements ✅
   - `action.interaction` flag correctly controls subject/action tags ✅
   - Empty/null outfit becomes `completely nude` ✅
-  - Null/empty attributes omitted (no literal `null` in output) ✅
-  - Deterministic: same state always produces identical string ✅
+  - Null/empty attributes omitted ✅
+  - Deterministic output ✅
   - No trailing or double commas ✅
-  - Unit tests cover ordering, null handling, interaction flag scenarios, determinism, and comma hygiene ✅
+  - Unit tests cover ordering, null handling, interaction, determinism, and comma hygiene ✅
   - Test coverage ≥ 80% on new code ✅
 - Evidence:
-  - Full test run: 136/136 passing across 6 suites
-  - Coverage: `PromptBuilder.js` 100% statements, 88.09% branches, 100% functions, 100% lines
-  - Validation command: `node --experimental-vm-modules ./node_modules/jest/bin/jest.js --coverage --runInBand`
+  - `PromptBuilder.js` 100% statements, 88.09% branches, 100% functions, 100% lines
+  - Full test run passed at completion time
   - Branch: `feature/t-005-prompt-builder`
 - Dependencies: T-002
-- Notes: Implemented as a pure static formatter to keep T-008 and T-009 integration straightforward.
+- Notes: Implemented as a pure formatter to keep T-008 and T-009 integration straightforward.
 
 ## T-006 - [feature] Background Switcher
 - Owner: AI Assistant
@@ -144,29 +137,29 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
 - Scope: `scope.md` § In Scope (dynamic background set)
 - Design: `design.md` §3.5 (Background Search Strategy), §3.2 (Background Layer)
 - Acceptance criteria:
-  - `BackgroundSwitcher.js` implements cascading search: `name+daytime+weather -> name+daytime -> name` ✅
+  - `BackgroundSwitcher.js` implements cascading search ✅
   - Search is case-insensitive and substring-based ✅
   - Sets background via ST background API on match ✅
   - Uses first result if multiple matches ✅
-  - Skips background change if no match (logs warning) ✅
-  - Unit tests for all search fallback scenarios ✅
+  - Skips background change if no match ✅
+  - Unit tests for fallback scenarios ✅
   - Test coverage ≥ 80% on new code ✅
 - Evidence:
   - `BackgroundSwitcher.js`: 100% statements, 80% branches, 100% functions, 100% lines
-  - Full test run: 153/153 passing across 8 suites
+  - Full test run: 153/153 passing across 8 suites at completion time
   - Validation command: `node --experimental-vm-modules ./node_modules/jest/bin/jest.js --coverage --runInBand`
-  - Runtime seam: background inventory fetched from `/api/backgrounds/all`; apply step updates ST `background_settings` because `backgrounds.js` does not export its internal `setBackground()` helper
+  - Runtime seam: background inventory fetched from `/api/backgrounds/all`; apply step mirrors exported ST background state because `backgrounds.js` does not export its private setter
   - Branch: `feature/t-006-background-switcher`
 - Dependencies: T-003
-- Notes: Implemented with injected `listBackgroundsFn` / `applyBackgroundFn` adapters to keep matching logic testable and resilient to ST internal API drift.
+- Notes: Implemented with injected `listBackgroundsFn` / `applyBackgroundFn` adapters to keep matching logic testable and resilient to ST API drift.
 
 ---
 
-## Backlog (Not Started)
+## Active / Backlog
 
 ## T-007 - [feature] Scene Tracker UI Panel
 - Owner: AI Assistant
-- Status: ⚪ 0% | Dates: planned start TBD
+- Status: 🔵 90% | Dates: started 2026-03-29
 - Scope: `scope.md` § In Scope (scene tracker UI)
 - Design: `design.md` §3.2 (UI Layer)
 - Acceptance criteria:
@@ -177,7 +170,14 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
   - Edits call `StateManager` methods (no direct state mutation)
   - UI updates reactively when state changes
   - Manual testing in SillyTavern confirms usability
-- Evidence: Will be added when started
+- Evidence:
+  - `TrackerPanel.js` implemented with mounted side panel, reactive state subscriptions, edit/reset handlers, and slash-command toggle wiring
+  - `StateManager.js` now exposes subscription and baseline reset seams so the UI reacts without polling
+  - Full test run: 167/167 passing across 9 suites
+  - Coverage: 93.64% statements, 85.53% branches, 95.55% functions, 94.55% lines
+  - UI module coverage: `TrackerPanel.js` 93.45% statements, 86.9% branches, 88.46% functions, 93.39% lines
+  - Validation command: `node --experimental-vm-modules ./node_modules/jest/bin/jest.js --coverage --runInBand`
+  - Remaining acceptance item: manual usability verification inside SillyTavern
 - Dependencies: T-003
 
 ## T-008 - [feature] Image Generation Hook
@@ -226,8 +226,8 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
 - Design: `design.md` (full)
 - Acceptance criteria:
   - `manifest.json` finalized with correct version and file references
-  - All files needed at runtime included; no dev-only files
-  - README with install instructions, feature overview, configuration guide
+  - All runtime files included; no dev-only files
+  - README with install instructions, feature overview, and configuration guide
   - No console errors or warnings on load
   - Clean extension list appearance in SillyTavern
 - Evidence: Will be added when started
@@ -247,16 +247,16 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
   - Test coverage ≥ 80% on new code
 - Evidence: Will be added when started
 - Dependencies: T-003, T-004
-- Notes: This is intentionally deferred follow-up work after marker-based card initialization and should reuse the injected provider pattern already used for appearance extraction.
+- Notes: This is the deferred follow-up after marker-based card initialization and should reuse the injected provider pattern already used for appearance extraction.
 
 ---
 
 ## Task Numbering
 
-**Current highest number:** T-012  
+**Current highest number:** T-012
 **Next task:** T-013
 
-**Tasks complete:** 7 (T-000, T-001, T-002, T-003, T-004, T-005, T-006)  
+**Tasks complete:** 7 (T-000 through T-006)
 **Tasks remaining:** 6 (T-007 through T-012)
 
 ---
@@ -271,6 +271,7 @@ This document tracks all tasks for EverLook, their acceptance criteria, status, 
 | 2026-03-29 | T-005 completed - prompt builder implementation and evidence recorded | AI Assistant |
 | 2026-03-29 | Added T-012 for deferred silent init extraction of starting pose, emotion, and location | AI Assistant |
 | 2026-03-29 | T-006 completed - background switcher implemented with injected ST runtime adapters and Jest coverage evidence | AI Assistant |
+| 2026-03-29 | T-007 advanced to in-progress with implemented tracker panel, reactive state seam, slash command toggle, and full Jest evidence | AI Assistant |
 
 ---
 

@@ -13,6 +13,9 @@ class StateManager {
     /** @type {SceneState|null} */
     #currentState = null;
 
+    /** @type {SceneState|null} */
+    #baselineState = null;
+
     /** @type {string|null} */
     #chatId = null;
 
@@ -21,6 +24,9 @@ class StateManager {
 
     /** @type {Function|null} */
     #getContext = null;
+
+    /** @type {Set<Function>} */
+    #subscribers = new Set();
 
     /**
      * Injects SillyTavern dependencies so we avoid fragile relative file paths
@@ -43,6 +49,21 @@ class StateManager {
     }
 
     /**
+     * Subscribe to state changes so UI/runtime modules can react without polling.
+     *
+     * @param {Function} listener
+     * @returns {Function} Unsubscribe callback
+     */
+    subscribe(listener) {
+        if (typeof listener !== 'function') {
+            throw new TypeError('[EverLook] StateManager.subscribe requires a listener function.');
+        }
+
+        this.#subscribers.add(listener);
+        return () => this.#subscribers.delete(listener);
+    }
+
+    /**
      * Initializes the SceneState for the given chat ID.
      * Restores from settings if it exists, otherwise creates a new default state 
      * seeded with character card data.
@@ -54,11 +75,15 @@ class StateManager {
         if (!chatId) {
             console.warn('[EverLook] StateManager.initChat called without a chatId.');
             this.#currentState = null;
+            this.#baselineState = null;
             this.#chatId = null;
+            this.#notifySubscribers();
             return;
         }
 
         this.#chatId = chatId;
+        let nextState = null;
+        let shouldPersist = false;
         
         // Ensure the chatStates dictionary exists
         if (this.#extensionSettings && !this.#extensionSettings.EverLook) {
@@ -72,15 +97,26 @@ class StateManager {
 
         if (savedData) {
             try {
-                this.#currentState = SceneState.fromJSON(savedData);
+                nextState = SceneState.fromJSON(savedData);
                 console.info(`[EverLook] SceneState revived for chat: ${chatId}`);
             } catch (err) {
                 console.error(`[EverLook] Failed to parse saved SceneState for chat: ${chatId}, falling back to default.`, err);
-                this.#currentState = await this.#createFreshState(chatId, characterId);
+                nextState = await this.#createFreshState(chatId, characterId);
+                shouldPersist = true;
             }
         } else {
-            this.#currentState = await this.#createFreshState(chatId, characterId);
+            nextState = await this.#createFreshState(chatId, characterId);
+            shouldPersist = true;
         }
+
+        this.#currentState = nextState;
+        this.#baselineState = SceneState.fromJSON(nextState.toJSON());
+
+        if (shouldPersist) {
+            this.#saveState();
+        }
+
+        this.#notifySubscribers();
     }
 
     /**
@@ -138,11 +174,8 @@ class StateManager {
             action: { name: null, interaction: false },
             outfit,
         });
-        console.info(`[EverLook] SceneState created for chat: ${chatId}`);
-        
-        this.#currentState = newState;
-        this.#saveState(); // Persist immediately upon creation
 
+        console.info(`[EverLook] SceneState created for chat: ${chatId}`);
         return newState;
     }
 
@@ -161,7 +194,25 @@ class StateManager {
 
         this.#currentState = this.#currentState.update(changes);
         this.#saveState();
+        this.#notifySubscribers();
 
+        return this.#currentState;
+    }
+
+    /**
+     * Restore the current chat state to the last loaded baseline for this session.
+     *
+     * @returns {SceneState|null}
+     */
+    resetState() {
+        if (!this.#baselineState) {
+            console.warn('[EverLook] Cannot reset state: no baseline is available.');
+            return null;
+        }
+
+        this.#currentState = SceneState.fromJSON(this.#baselineState.toJSON());
+        this.#saveState();
+        this.#notifySubscribers();
         return this.#currentState;
     }
 
@@ -183,6 +234,17 @@ class StateManager {
             }
         } catch (error) {
             console.error('[EverLook] Failed to save state to extension_settings:', error);
+        }
+    }
+
+    /** Notify subscribers after the canonical state changes. */
+    #notifySubscribers() {
+        for (const listener of this.#subscribers) {
+            try {
+                listener(this.#currentState);
+            } catch (error) {
+                console.error('[EverLook] State subscriber failed:', error);
+            }
         }
     }
 }

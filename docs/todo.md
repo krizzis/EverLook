@@ -1,12 +1,12 @@
 # todo.md
 
-**Session Date:** 2026-03-29  
-**Time Budget:** 2-3 hours  
-**Session Goal:** Advance post-T-006 work by preparing the tracker UI slice and keeping init-time extraction follow-up visible
+**Session Date:** 2026-03-29
+**Time Budget:** 1-2 hours
+**Session Goal:** Finish T-007 by manually verifying the new tracker panel in SillyTavern, then roll into the next runtime-integrated slice.
 
 ---
 
-## Active Tasks for This Session
+## Active Tasks for Next Session
 
 ### T-007 - Scene Tracker UI Panel
 
@@ -18,15 +18,14 @@
 - UI updates reactively when state changes
 - Manual testing in SillyTavern confirms usability
 
-**Session-specific notes:**
-- Reuse the existing `src/ui/tracker.html` shell and keep DOM wiring in the UI layer
-- Avoid leaking business logic into `index.js`; keep it to event/slash wiring only
-- Manual verification will matter more than pure unit coverage for this slice
+**Next-session notes:**
+- Code and Jest coverage are already in place; remaining work is runtime verification
+- Verify `renderExtensionTemplateAsync(..., 'src/ui/tracker')` resolves correctly in the live ST host
+- Confirm the current chat is initialized on startup without requiring a manual chat switch
 
-**Expected progress this session:**
-- Complete panel rendering and edit/reset handlers
-- Sketch the slash-command toggle seam in `index.js`
-- Record manual test steps once the panel is runnable
+**Expected progress next session:**
+- Complete manual verification and, if clean, mark T-007 done in `docs/tracker.md`
+- Capture any runtime-only bugs or polish items discovered in ST
 
 ---
 
@@ -40,92 +39,71 @@
 - Unit tests cover prompt construction, fallback/no-op behavior, and successful state seeding
 - Changed-lines test coverage >= 80%
 
-**Session-specific notes:**
-- This is a follow-up TODO, not the current active task
-- Source text should come from scenario plus the first character message, not the full card description
+**Next-session notes:**
+- This is still the cleanest follow-up after T-007 verification
 - Reuse the existing injected-provider pattern so runtime binding stays swappable
+- Source text should come from scenario plus the first character message, not the full card description
 
-**Expected progress this session:**
-- Leave explicit TODOs in code/docs so the work can be picked up cleanly after T-007 if not started sooner
+**Expected progress next session:**
+- Begin prompt and provider wiring once T-007 manual verification is no longer blocking the UI slice
 
 ---
 
 ## Session Priorities
 
 **Must complete (P0):**
-- T-007 - Scene Tracker UI Panel
+- Manually verify T-007 in the local SillyTavern runtime
 
 **Should complete (P1):**
-- Keep init-time extraction follow-up visible in docs and code TODOs
+- If verification passes, mark T-007 complete in `docs/tracker.md` and `docs/handoff.md`
 
 **Could complete if time permits (P2):**
-- Start T-012 init-time pose/emotion/location extraction design spike
+- Start T-012 init-time pose/emotion/location extraction
 
 ---
 
-## Context for This Session
+## Context for Next Session
 
-**What happened last session:**
-- T-006 finished successfully with cascading background search, runtime adapters, and Jest coverage
-- T-005 prompt generation and marker-based character initialization remain stable
-- Appearance fallback still uses an injected silent extractor path, but other init-time scene fields are still default-seeded
+**What changed this session:**
+- T-007 tracker panel was implemented in code with edit/reset UI, slash-command toggle, responsive styling, and startup mounting
+- `StateManager` now supports subscriptions and baseline resets so UI updates reactively without polling
+- Full Jest validation passed with coverage above thresholds, including direct coverage for `src/ui/TrackerPanel.js`
 
 **Current blockers/dependencies:**
-- T-007 needs the least-coupled slash command and UI refresh seam in `index.js`
-- T-012 depends on confirming the exact scenario/first-message sources and Tech-LLM binding in `index.js`
+- T-007 still depends on manual verification inside SillyTavern before it can be closed honestly
+- T-012 still depends on confirming the exact scenario/first-message sources and Tech-LLM binding in `index.js`
 
 **Environment notes:**
-- Project branch should be a fresh `feature/<slug>` branch before implementation
-- Use the existing Jest setup; no new test framework is needed
+- Current working branch: `feature/t-007-scene-tracker-ui`
+- Validation command: `node --experimental-vm-modules ./node_modules/jest/bin/jest.js --coverage --runInBand`
 
 ---
 
-## Success Criteria for This Session
+## Success Criteria for Next Session
 
-By end of session, we should have:
-- [ ] `src/ui/TrackerPanel.js` implemented
-- [ ] UI rendering and edit/reset wiring available from the extension runtime
-- [ ] Manual verification steps recorded for the panel
-- [ ] `docs/tracker.md` updated with T-007 status and evidence
-- [ ] T-012 follow-up is explicitly captured in docs/code TODOs
-
-If we do not complete everything:
-- Minimum viable progress: panel rendering scaffold plus documented manual test steps
-- Do not start T-012 runtime wiring without confirming the ST provider entry point
+By end of the next session, we should have:
+- [ ] Manual ST verification for T-007 captured with pass/fail notes
+- [ ] `docs/tracker.md` updated to either `✅` or left `🔵` with a concrete blocker
+- [ ] `docs/handoff.md` refreshed with the runtime evidence
+- [ ] Clear decision on whether T-012 or runtime background-trigger integration is the next active code slice
 
 ---
 
-## Time Boxing
+## Manual Test Checklist for T-007
 
-**Estimated breakdown:**
-- T-007 UI implementation: 75 minutes
-- T-007 manual verification and polish: 30 minutes
-- Validation and tracker/handoff updates: 20 minutes
-- Optional T-012 design/trace pass: 30-45 minutes
-
----
-
-## Notes & Reminders
-
-**Before starting:**
-- [ ] Re-read `docs/design.md` Section 3.2 for UI responsibilities
-- [ ] Keep T-012 source inputs limited to scenario plus the first character message
-
-**During session:**
-- [ ] Keep mutable scene edits routed through `StateManager`
-- [ ] Preserve single-source-of-truth state ownership
-- [ ] Add manual verification notes alongside implementation
-
-**After session:**
-- [ ] Capture exact validation command and full output
-- [ ] Update `docs/tracker.md` with evidence and status
-- [ ] Refresh `docs/handoff.md` using the canonical schema in `docs/methodology.md` Section 4
+- [ ] Reload the extension in SillyTavern and confirm no startup errors
+- [ ] Run `/everlook-tracker` to toggle the panel open
+- [ ] Run `/everlook-tracker hide` and `/everlook-tracker show`
+- [ ] Confirm the current chat state appears without switching chats manually
+- [ ] Edit pose, emotion, action, location, and outfit; save; confirm values persist in the panel
+- [ ] Click `Reset Scene` and confirm the state returns to the loaded chat baseline
+- [ ] Switch chats and confirm the panel updates reactively for the newly active chat
 
 ---
 
 ## Upcoming Tasks
 
-- **T-007**: Scene Tracker UI - Panel rendering, edit, reset, slash command toggle
+- **T-007**: Scene Tracker UI - Finish manual verification and close the task
 - **T-012**: Init-Time Scene Extraction - Silent Tech-LLM pass for starting pose, emotion, and location
 - **T-008**: Image Generation Hook - Inject EverLook prompt into the ST image pipeline
 - **T-009**: Context Injection - Inject current scene state into chat context before user message

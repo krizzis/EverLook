@@ -29,6 +29,12 @@ describe('StateManager', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         global.extension_settings.EverLook.chatStates = {};
+        mockContext.characters = {
+            10: {
+                name: 'Alice',
+                description: '[APPEARANCE]\nlong blonde hair, blue eyes\n\n[LORA]\n<lora:alice:1>\n\n[OUTFIT]\nschool uniform, skirt',
+            },
+        };
         
         // Inject fake ST environment variables
         stateManager.setup(global.extension_settings, () => mockContext);
@@ -121,6 +127,44 @@ describe('StateManager', () => {
         const savedData = global.extension_settings.EverLook.chatStates['test-chat-1'];
         expect(savedData.pose).toBe('standing');
         expect(mockContext.saveSettingsDebounced).toHaveBeenCalledTimes(1);
+    });
+
+    it('notifies subscribers on init, update, reset, and chat clear', async () => {
+        const listener = jest.fn();
+        const unsubscribe = stateManager.subscribe(listener);
+
+        await stateManager.initChat('test-chat-1', 10);
+        const baselineState = listener.mock.calls.at(-1)[0];
+        expect(baselineState.characterName).toBe('Alice');
+
+        stateManager.updateState({ pose: 'standing' });
+        expect(listener.mock.calls.at(-1)[0].pose).toBe('standing');
+
+        stateManager.resetState();
+        expect(listener.mock.calls.at(-1)[0].pose).toBeNull();
+
+        await stateManager.initChat(null, null);
+        expect(listener.mock.calls.at(-1)[0]).toBeNull();
+
+        unsubscribe();
+    });
+
+    it('resets the current state to the chat baseline', async () => {
+        await stateManager.initChat('test-chat-1', 10);
+        stateManager.updateState({
+            pose: 'standing',
+            emotion: 'happy',
+            location: { name: 'classroom', daytime: 'night', weather: 'rainy' },
+            outfit: ['hoodie'],
+        });
+
+        const resetState = stateManager.resetState();
+
+        expect(resetState.pose).toBeNull();
+        expect(resetState.emotion).toBeNull();
+        expect(resetState.location).toEqual({ name: null, daytime: 'day', weather: 'clear' });
+        expect(resetState.outfit).toEqual(['school uniform', 'skirt']);
+        expect(mockContext.saveSettingsDebounced).toHaveBeenCalled();
     });
 
     it('handles undefined ST context attributes gracefully when creating fresh state', async () => {

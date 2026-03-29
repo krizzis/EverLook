@@ -6,6 +6,7 @@ export default {
         'src/analyzer/**/*.js',
         'src/prompt/**/*.js',
         'src/background/**/*.js',
+        'src/ui/**/*.js',
     ],
     coverageThreshold: {
         global: {

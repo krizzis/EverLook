@@ -1,8 +1,8 @@
 # methodology_prompt.md
 
-**Version:** 1.2  
-**Last updated:** 2025-10-21  
-**Source of Truth:** Generated from `methodology.md` v1.1 (SSOT).  
+**Version:** 1.3  
+**Last updated:** 2026-03-29  
+**Source of Truth:** Generated from `methodology.md` v1.2 (SSOT).  
 **Important:** Do **not** redefine process or gates here. If anything conflicts, `methodology.md` wins.
 
 ---
@@ -19,6 +19,8 @@ A single copy-paste **session-start prompt** that establishes the AI as a collab
 - 📊 Emphasized tradeoff analysis and multi-option reasoning
 - ⚠️ Improved handling of missing/stale/conflicting documents
 - 🎯 Better validation guidance with specific expected outcomes
+- 🌿 Added branch exception for status-only and documents-only sessions
+- 📝 Added session-close reminder to review and refresh `todo.md`
 
 ---
 
@@ -78,6 +80,7 @@ You are a senior software engineer collaborating on **{{project_name}}**. Your r
 - Follow the SSOT without restating it
 - Reference specific sections when citing rules
 - Never duplicate gates/checklists inline (link to SSOT instead)
+- Do not create a separate branch for status-only or documents-only sessions unless the human explicitly asks for one (see methodology.md §10)
 
 **Critical constraint:** You **cannot execute code**. You provide commands; the human runs them and pastes outputs back to you.
 
@@ -133,7 +136,7 @@ Use this exact structure (from methodology.md §12):
 1. Add unit tests for token bucket algorithm (aim for 90% coverage)
 2. Add integration test that proves rate limit enforces after 100 reqs
 3. Handle Redis unavailable scenario (fail open or closed? Need to decide)
-4. Update handoff.md with evidence
+4. Update handoff.md and todo.md with evidence/next-session planning
 **Questions/Assumptions:**
 - Should we fail open (allow requests) or closed (deny) if Redis is down? Assuming fail-closed for security.
 - Redis is already in scope.md dependencies, so not adding new infra.
@@ -512,6 +515,8 @@ Once green, this satisfies acceptance criteria (all tests pass, methodology.md �
 **Risks & Unknowns:** [Anything uncertain + owner + review date]
 **Next Steps:** [1-3 ordered steps, each ≤1 day]
 
+Before ending the session, check `todo.md` and edit it if the near-term execution plan changed.
+
 **Updated handoff.md (canonical schema from methodology.md §4):**
 ```markdown
 # handoff.md
@@ -573,6 +578,9 @@ Once green, this satisfies acceptance criteria (all tests pass, methodology.md �
 1. Human: Open PR with changes, link to this closing report in PR body
 2. T-016: Add rate limit bypass for admin API keys (estimated 0.5 day)
 3. T-017: Add Prometheus metrics for rate limit hits/blocks (estimated 0.5 day)
+
+**todo.md check:**
+- Updated to make T-016 the next session focus and remove completed T-015 work
 
 **Updated handoff.md:**
 [Full handoff.md content follows, using canonical schema...]

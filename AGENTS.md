@@ -145,6 +145,7 @@ Best for: public read-heavy APIs
 **Recommendation:** Given docs/scope.md mentions production use and docs/design.md already uses Redis for sessions, **B (Redis)** keeps infrastructure consistent and meets the SLO. Agree?
 
 Create a new branch before starting write code for this session. All changes during this session should be done only in this created branch if not directly allowed by human operator
+ Exception: skip creating a separate branch for status-only sessions or documents-only sessions unless you specifically want branch isolation.
 ```
 
 ## Provide Complete, Reviewable Code

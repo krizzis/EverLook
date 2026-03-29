@@ -17,8 +17,11 @@ import { stateManager } from './src/state/StateManager.js';
 import {
     eventSource,
     event_types,
+    getRequestHeaders,
     saveSettingsDebounced,
 } from '../../../../script.js';
+import { background_settings } from '../../../backgrounds.js';
+import { backgroundSwitcher } from './src/background/BackgroundSwitcher.js';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -79,6 +82,49 @@ function getSettings() {
 }
 
 /**
+ * Fetches the available global background filenames from SillyTavern.
+ * We call the same API endpoint the ST background UI uses so the matcher can
+ * work even though ST's internal setBackground helper is not exported.
+ */
+async function listSystemBackgrounds() {
+    const response = await fetch('/api/backgrounds/all', {
+        method: 'POST',
+        headers: getRequestHeaders(),
+        body: JSON.stringify({}),
+    });
+
+    if (!response.ok) {
+        throw new Error(`Background list request failed: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return Array.isArray(data?.images) ? data.images : [];
+}
+
+/**
+ * Applies a matched global background through the same state ST uses internally.
+ * This mirrors the private backgrounds.js setter closely enough to stay
+ * compatible without importing a non-exported function.
+ *
+ * @param {string} backgroundName
+ * @returns {Promise<string>}
+ */
+async function applySystemBackground(backgroundName) {
+    const backgroundUrl = `url("backgrounds/${encodeURIComponent(backgroundName)}")`;
+
+    // Respect chat-specific locks the same way ST's internal background setter does.
+    if (!globalThis.chat_metadata?.custom_background) {
+        $('#bg1').css('background-image', backgroundUrl);
+    }
+
+    background_settings.name = backgroundName;
+    background_settings.url = backgroundUrl;
+    saveSettingsDebounced();
+
+    return backgroundName;
+}
+
+/**
  * Expose a tiny manual verification surface in the browser console.
  * This keeps prompt debugging available before the full image hook lands.
  */
@@ -91,6 +137,9 @@ function registerDebugHelpers() {
             const prompt = PromptBuilder.build(sceneState);
             console.info(`[${EXTENSION_NAME}] Debug prompt:`, prompt);
             return prompt;
+        },
+        async syncBackground(location = stateManager.getState()?.location) {
+            return backgroundSwitcher.switch(location);
         },
     };
 
@@ -225,6 +274,12 @@ jQuery(async () => {
 
         // 2. Inject ST global handlers into the StateManager
         stateManager.setup(extension_settings, getContext);
+
+        // 2a. Inject ST runtime hooks into the background switcher.
+        backgroundSwitcher.setup({
+            listBackgroundsFn: listSystemBackgrounds,
+            applyBackgroundFn: applySystemBackground,
+        });
 
         // 3. Render settings UI
         await renderSettings();

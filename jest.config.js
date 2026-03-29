@@ -5,6 +5,7 @@ export default {
         'src/state/**/*.js',
         'src/analyzer/**/*.js',
         'src/prompt/**/*.js',
+        'src/background/**/*.js',
     ],
     coverageThreshold: {
         global: {

@@ -1,6 +1,13 @@
 import { SceneState } from './SceneState.js';
 import { appearanceExtractor } from '../analyzer/AppearanceExtractor.js';
+import { initSceneExtractor } from '../analyzer/InitSceneExtractor.js';
 import { parseCharacterDescription } from './cardMetadata.js';
+import {
+    getFirstCharacterMessage,
+    getScenarioText,
+    isDefaultLocation,
+    needsInitialSceneExtraction,
+} from '../runtime/chatHelpers.js';
 
 /**
  * StateManager manages the Singleton instance of the active SceneState.
@@ -39,6 +46,7 @@ class StateManager {
         this.#extensionSettings = extensionSettings;
         this.#getContext = getContextFn;
         appearanceExtractor.setup(options.appearanceProviderFn);
+        initSceneExtractor.setup(options.initSceneProviderFn);
     }
 
     /**
@@ -127,11 +135,13 @@ class StateManager {
         let name = 'Unknown Character';
         let lora = null;
         let rawDescription = '';
+        let context = null;
+        let charData = null;
         
         try {
-            const context = typeof this.#getContext === 'function' ? this.#getContext() : null;
+            context = typeof this.#getContext === 'function' ? this.#getContext() : null;
             if (context && context.characters && context.characters[characterId]) {
-                const charData = context.characters[characterId];
+                charData = context.characters[characterId];
                 name = charData.name || charData.data?.name || name;
                 rawDescription = charData.description || charData.data?.description || '';
             } else {
@@ -163,7 +173,7 @@ class StateManager {
         // TODO(T-012): Add a silent Tech-LLM init pass that derives starting pose,
         // emotion, and location from the active scenario plus the character's
         // first message before the first turn-pair analysis runs.
-        const newState = SceneState.create({
+        let newState = SceneState.create({
             chatId,
             characterName: name,
             characterLora: lora,
@@ -175,8 +185,61 @@ class StateManager {
             outfit,
         });
 
+        if (needsInitialSceneExtraction(newState)) {
+            newState = await this.#seedInitialSceneState(newState, context, charData);
+        }
+
         console.info(`[EverLook] SceneState created for chat: ${chatId}`);
         return newState;
+    }
+
+    async #seedInitialSceneState(baseState, context, charData) {
+        const scenario = getScenarioText(context, charData);
+        const firstMessage = getFirstCharacterMessage(context, charData);
+
+        if (!scenario && !firstMessage) {
+            return baseState;
+        }
+
+        try {
+            const extracted = await initSceneExtractor.extract({
+                scenario,
+                firstMessage,
+                currentState: baseState.toJSON(),
+            });
+
+            if (!extracted) {
+                return baseState;
+            }
+
+            const seededChanges = {};
+
+            if (baseState.pose == null && typeof extracted.pose === 'string' && extracted.pose) {
+                seededChanges.pose = extracted.pose;
+            }
+
+            if (baseState.emotion == null && typeof extracted.emotion === 'string' && extracted.emotion) {
+                seededChanges.emotion = extracted.emotion;
+            }
+
+            if (isDefaultLocation(baseState.location) && extracted.location && typeof extracted.location === 'object') {
+                seededChanges.location = {
+                    name: extracted.location.name ?? null,
+                    daytime: extracted.location.daytime ?? baseState.location.daytime,
+                    weather: extracted.location.weather ?? baseState.location.weather,
+                };
+            }
+
+            if (Object.keys(seededChanges).length === 0) {
+                return baseState;
+            }
+
+            console.info('[EverLook] Initial pose/emotion/location seeded from silent init extraction.');
+            return baseState.update(seededChanges);
+        } catch (error) {
+            console.warn('[EverLook] Initial scene extraction failed. Safe defaults preserved.', error);
+            return baseState;
+        }
     }
 
     /**

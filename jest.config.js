@@ -7,6 +7,7 @@ export default {
         'src/prompt/**/*.js',
         'src/background/**/*.js',
         'src/ui/**/*.js',
+        'src/runtime/**/*.js',
     ],
     coverageThreshold: {
         global: {

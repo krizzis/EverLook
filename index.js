@@ -18,13 +18,17 @@ import { trackerPanel } from './src/ui/TrackerPanel.js';
 import {
     eventSource,
     event_types,
+    generateQuietPrompt,
     getRequestHeaders,
     saveSettingsDebounced,
 } from '../../../../script.js';
 import { background_settings } from '../../../backgrounds.js';
 import { SlashCommand } from '../../../slash-commands/SlashCommand.js';
 import { SlashCommandParser } from '../../../slash-commands/SlashCommandParser.js';
+import { turnPairAnalyzer } from './src/analyzer/TurnPairAnalyzer.js';
 import { backgroundSwitcher } from './src/background/BackgroundSwitcher.js';
+import { SceneRuntimeController } from './src/runtime/SceneRuntimeController.js';
+import { buildTechLlmQuietPrompt } from './src/runtime/chatHelpers.js';
 
 const EXTENSION_NAME = 'EverLook';
 
@@ -44,6 +48,15 @@ const defaultSettings = {
     autoBackground: true,
     chatStates: {},
 };
+
+const sceneRuntime = new SceneRuntimeController({
+    getContextFn: getContext,
+    stateManager,
+    analyzer: turnPairAnalyzer,
+    backgroundSwitcher,
+    getSettings,
+    logger: console,
+});
 
 function initSettings() {
     if (!extension_settings[EXTENSION_NAME]) {
@@ -67,6 +80,12 @@ function getSettings() {
 
 function notify(kind, message) {
     globalThis.toastr?.[kind]?.(message, EXTENSION_NAME);
+}
+
+async function runSilentTechLlm(systemPrompt, userPrompt) {
+    return generateQuietPrompt({
+        quietPrompt: buildTechLlmQuietPrompt(systemPrompt, userPrompt),
+    });
 }
 
 async function listSystemBackgrounds() {
@@ -217,18 +236,18 @@ async function onChatChanged() {
 
     if (context?.chatId) {
         await stateManager.initChat(context.chatId, context.characterId);
+        await sceneRuntime.syncBackgroundForCurrentState();
     }
 }
 
-function onMessageReceived(messageIndex) {
+async function onMessageReceived(messageIndex, source) {
     const settings = getSettings();
     if (!settings.enabled) {
         return;
     }
 
     console.info(`[${EXTENSION_NAME}] Message received - index=${messageIndex}`);
-
-    // TODO(T-004): TurnPairAnalyzer.analyze(turnPair, currentState)
+    await sceneRuntime.handleCharacterMessage(messageIndex, source);
 }
 
 function onMessageSent(messageIndex) {
@@ -241,6 +260,8 @@ function onMessageSent(messageIndex) {
         console.debug(`[${EXTENSION_NAME}] Message sent - index=${messageIndex}`);
     }
 
+    sceneRuntime.captureUserMessage(messageIndex);
+
     // TODO(T-009): Inject current scene state into chat context
 }
 
@@ -248,7 +269,11 @@ jQuery(async () => {
     try {
         initSettings();
 
-        stateManager.setup(extension_settings, getContext);
+        stateManager.setup(extension_settings, getContext, {
+            appearanceProviderFn: runSilentTechLlm,
+            initSceneProviderFn: runSilentTechLlm,
+        });
+        sceneRuntime.setup({ providerFn: runSilentTechLlm });
         backgroundSwitcher.setup({
             listBackgroundsFn: listSystemBackgrounds,
             applyBackgroundFn: applySystemBackground,
